@@ -1,0 +1,18 @@
+{
+  "name": "vibecraft-local",
+  "description": "vibecraft 로컬 마켓플레이스 - 바이브코딩 한국어 플러그인",
+  "owner": {
+    "name": "앤기브마케팅"
+  },
+  "plugins": [
+    {
+      "name": "vibecraft",
+      "description": "바이브코딩 키트 - AI가 상황을 자동 감지하고 적절한 워크플로우를 안내하는 한국어 전용 플러그인",
+      "version": "0.1.0",
+      "source": "./",
+      "author": {
+        "name": "앤기브마케팅"
+      }
+    }
+  ]
+}
