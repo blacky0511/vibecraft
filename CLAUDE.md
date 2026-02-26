@@ -26,21 +26,54 @@ AI가 상황을 자동 감지하고, 사용자는 아이디어만 제공하면 �
 vibecraft/
 ├── .claude-plugin/           # 플러그인 메타데이터
 │   └── plugin.json
-├── skills/                   # 스킬 정의 (워크플로우/규칙)
-│   ├── core/                 # 핵심 스킬
-│   │   ├── auto-detect/      # 상황 자동 감지
-│   │   ├── smart-pdca/       # 작업 크기별 PDCA 조절
-│   │   ├── iron-law/         # TDD + 검증 필수
-│   │   └── verification/     # 완료 전 검증 게이트
-│   ├── modes/                # 모드별 스킬 (Phase 2)
-│   └── presets/              # 기술 스택 프리셋 (Phase 4)
-├── agents/                   # 에이전트 정의 (Phase 3)
+├── skills/                   # 스킬 20개
+│   ├── auto-detect/          # 상황 자동 감지
+│   ├── smart-pdca/           # 작업 크기별 PDCA 조절
+│   ├── iron-law/             # TDD + 검증 필수
+│   ├── verification/         # 완료 전 검증 게이트
+│   ├── brainstorming/        # 아이디어 → 설계
+│   ├── writing-plans/        # 설계 → 구현 계획
+│   ├── new-feature/          # 새 기능 오케스트레이션
+│   ├── systematic-debugging/ # 체계적 디버깅
+│   ├── project-kickoff/      # 프로젝트 시작 가이드
+│   ├── git-workflow/         # Git 브랜치/커밋/PR 관리
+│   ├── executing-plans/      # 서브에이전트 병렬 실행
+│   ├── team-orchestration/   # CTO 팀 구성
+│   ├── external-reviewer/    # 외부 리뷰 도구 연동
+│   ├── code-review-request/  # 코드 리뷰 요청
+│   ├── code-review-receive/  # 리뷰 피드백 처리
+│   ├── deploy-guide/         # 배포 가이드
+│   ├── finishing-branch/     # 브랜치 정리
+│   ├── preset-spring/        # Spring Boot 프리셋
+│   ├── preset-nextjs/        # Next.js 프리셋
+│   ├── preset-python/        # Python 프리셋
+│   └── preset-general/       # 범용 프리셋
+├── agents/                   # 에이전트 11개
+│   ├── cto-lead.md           # 팀 리드
+│   ├── code-analyzer.md      # 코드 분석
+│   ├── frontend-builder.md   # 프론트엔드 구현
+│   ├── backend-builder.md    # 백엔드 구현
+│   ├── test-writer.md        # 테스트 작성
+│   ├── debugger.md           # 디버깅 전문
+│   ├── code-reviewer.md      # 코드 리뷰
+│   ├── code-simplifier.md    # 코드 간소화
+│   ├── deploy-manager.md     # 배포 관리
+│   ├── doc-writer.md         # 문서 작성
+│   └── gap-detector.md       # 누락 항목 탐지
 ├── hooks/                    # 훅 설정
 │   └── hooks.json
 ├── scripts/                  # 훅 실행 스크립트
 │   ├── session-start.js
 │   └── preset-loader.js
-├── templates/                # 문서 템플릿 (Phase 4)
+├── templates/                # 문서 템플릿 8개
+│   ├── plan.md               # 구현 계획서
+│   ├── design.md             # 설계 문서
+│   ├── check-report.md       # 점검 보고서
+│   ├── debug-report.md       # 디버그 보고서
+│   ├── review-checklist.md   # 리뷰 체크리스트
+│   ├── deploy-checklist.md   # 배포 체크리스트
+│   ├── project-init.md       # 프로젝트 초기화
+│   └── sprint-summary.md     # 스프린트 요약
 ├── output-styles/            # 응답 포맷
 │   ├── learning.md           # 학습 모드
 │   └── standard.md           # 기본 모드
@@ -52,9 +85,9 @@ vibecraft/
 
 ## 구현 상태
 - Phase 1 (기반): 완료 - 핵심 스킬 4개, 훅 2개, 명령어 1개, Output Style 2개
-- Phase 2 (워크플로우): 미구현
-- Phase 3 (서브에이전트 + 리뷰): 미구현
-- Phase 4 (완성도): 미구현
+- Phase 2 (워크플로우): 완료 - 모드별 스킬 6개
+- Phase 3 (서브에이전트 + 리뷰): 완료 - 실행/리뷰 스킬 3개, 에이전트 11개
+- Phase 4 (완성도): 완료 - 나머지 스킬 4개, 프리셋 4개, 템플릿 8개
 
 ## 코딩 규칙
 - 모든 텍스트: 한국어
