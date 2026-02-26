@@ -26,24 +26,45 @@ AI가 상황을 자동 감지하고, 사용자는 아이디어만 제공하면 �
 vibecraft/
 ├── .claude-plugin/           # 플러그인 메타데이터
 │   └── plugin.json
-├── skills/                   # 스킬 20개
-│   ├── auto-detect/          # 상황 자동 감지
+├── skills/                   # 스킬 36개
+│   ├── # 핵심 엔진
+│   ├── auto-detect/          # 상황 자동 감지 + ralph-loop 라우팅
 │   ├── smart-pdca/           # 작업 크기별 PDCA 조절
 │   ├── iron-law/             # TDD + 검증 필수
 │   ├── verification/         # 완료 전 검증 게이트
+│   ├── cto-mindset/          # CTO 마인드셋 (의견 제시)
+│   ├── session-context/      # 세션 맥락 보존 (compact 대비)
+│   ├── # 워크플로우
 │   ├── brainstorming/        # 아이디어 → 설계
 │   ├── writing-plans/        # 설계 → 구현 계획
 │   ├── new-feature/          # 새 기능 오케스트레이션
+│   ├── simple-tweak/         # 단순 수정 안내 (DIY 가이드)
 │   ├── systematic-debugging/ # 체계적 디버깅
 │   ├── project-kickoff/      # 프로젝트 시작 가이드
 │   ├── git-workflow/         # Git 브랜치/커밋/PR 관리
 │   ├── executing-plans/      # 서브에이전트 병렬 실행
 │   ├── team-orchestration/   # CTO 팀 구성
-│   ├── external-reviewer/    # 외부 리뷰 도구 연동
+│   ├── finishing-branch/     # 브랜치 정리
+│   ├── # 코드 품질 (CTO 스마트 스킬)
+│   ├── impact-analysis/      # 수정 전 영향 범위 분석
+│   ├── pre-flight-check/     # 구현 전 중복/충돌 확인
+│   ├── dependency-auditor/   # 패키지 설치 전 검증
+│   ├── rollback-strategy/    # 위험 작업 전 체크포인트
+│   ├── naming-consultant/    # 변수/함수명 품질 제안
+│   ├── error-message-designer/ # 사용자 친화적 에러 메시지
+│   ├── consistency-enforcer/ # 프로젝트 패턴 일관성 감시
+│   ├── refactoring-radar/    # 코드 복잡도 감지/정리 제안
+│   ├── test-strategy-advisor/ # 테스트 우선순위 가이드
+│   ├── tech-debt-tracker/    # 기술 부채 기록/리마인드
+│   ├── user-empathy-lens/    # 사용자 시선 UX 점검
+│   ├── doc-autopilot/        # 코드-문서 동기화
+│   ├── skill-progression/    # 학습 진도 추적
+│   ├── # 리뷰 & 배포
 │   ├── code-review-request/  # 코드 리뷰 요청
 │   ├── code-review-receive/  # 리뷰 피드백 처리
+│   ├── external-reviewer/    # 외부 리뷰 도구 연동
 │   ├── deploy-guide/         # 배포 가이드
-│   ├── finishing-branch/     # 브랜치 정리
+│   ├── # 프리셋
 │   ├── preset-spring/        # Spring Boot 프리셋
 │   ├── preset-nextjs/        # Next.js 프리셋
 │   ├── preset-python/        # Python 프리셋

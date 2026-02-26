@@ -1,7 +1,7 @@
 ---
 name: cto-lead
 description: CTO 팀 리더. 작업을 분석하고 적절한 에이전트를 선별하여 태스크를 분배하고, 각 에이전트의 결과를 취합하여 최종 품질을 보장한다.
-model: claude-sonnet-4-6
+model: claude-opus-4-6
 permissionMode: acceptEdits
 ---
 

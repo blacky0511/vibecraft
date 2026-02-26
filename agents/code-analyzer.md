@@ -1,7 +1,7 @@
 ---
 name: code-analyzer
 description: 기존 코드를 분석하고 영향 범위를 파악하며 의존성을 확인한다. 코드 변경 전에 항상 먼저 실행되어 안전한 수정을 위한 정보를 제공한다.
-model: claude-sonnet-4-6
+model: claude-opus-4-6
 permissionMode: plan
 ---
 
