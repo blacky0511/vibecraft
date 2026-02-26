@@ -26,7 +26,7 @@ AI가 상황을 자동 감지하고, 사용자는 아이디어만 제공하면 �
 vibecraft/
 ├── .claude-plugin/           # 플러그인 메타데이터
 │   └── plugin.json
-├── skills/                   # 스킬 36개
+├── skills/                   # 스킬 37개
 │   ├── # 핵심 엔진
 │   ├── auto-detect/          # 상황 자동 감지 + ralph-loop 라우팅
 │   ├── smart-pdca/           # 작업 크기별 PDCA 조절
@@ -64,6 +64,7 @@ vibecraft/
 │   ├── code-review-receive/  # 리뷰 피드백 처리
 │   ├── external-reviewer/    # 외부 리뷰 도구 연동
 │   ├── deploy-guide/         # 배포 가이드
+│   ├── welcome-guide/        # 인사 시 사용법 가이드
 │   ├── # 프리셋
 │   ├── preset-spring/        # Spring Boot 프리셋
 │   ├── preset-nextjs/        # Next.js 프리셋
