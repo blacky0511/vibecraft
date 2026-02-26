@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-hooks.json",
+  "description": "vibecraft 훅 설정 - 세션 시작 시 자동 감지 + 기술 스택 프리셋 로드",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "once": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/session-start.js\"",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/preset-loader.js\"",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}
