@@ -52,4 +52,4 @@ allowed-tools:
 - 스킬 39개 | 에이전트 11개 | 프리셋 5개 | 템플릿 8개
 
 ### 버전
-vibecraft v1.0.0
+vibecraft v1.0.1
