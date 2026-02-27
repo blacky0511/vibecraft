@@ -37,6 +37,72 @@ description: |
 
 ---
 
+## 프롬프트 정제 (서브에이전트 위임 시 필수)
+
+M/L 사이즈에서 서브에이전트에 작업을 위임할 때,
+**반드시 `templates/subagent-prompt.md` 형식으로 프롬프트를 정제**한 후 전달한다.
+
+### 정제 절차
+
+서브에이전트에 Task 도구를 호출하기 **직전에** 아래를 수행한다:
+
+1. **맥락 수집**: 현재 대화에서 프로젝트명, 기술 스택, 경로, 브랜치 정보를 추출
+2. **파일 경로 명시**: 계획서의 Step에 대상 파일 경로를 절대/상대 경로로 포함
+3. **코딩 패턴 요약**: 수정 대상 파일의 네이밍, 에러 처리, 구조 패턴을 2~3줄로 정리
+4. **성공 기준 구체화**: "테스트 통과", "HTTP 200" 등 검증 가능한 조건으로 변환
+5. **범위 한정**: 건드리면 안 되는 파일, 판단 필요 시 "메인에 보고" 지시 포함
+
+### 왜 필요한가
+
+- 메인 에이전트는 대화 맥락이 있어서 "배포해줘"만으로 동작 가능
+- 서브에이전트는 맥락이 없으므로, **메인이 아는 정보를 구조화해서 전달**해야 함
+- 이 단계를 생략하면 서브에이전트가 헤매거나 품질이 떨어짐
+
+### 정제 예시
+
+```
+// 사용자 원문: "로그인 API 만들어줘"
+// 메인이 아는 맥락: Spring Boot, JWT, UserController 패턴
+
+// ❌ 정제 안 한 프롬프트
+prompt: "로그인 API를 만들어줘. 계획서: docs/plans/2026-02-27-login.md"
+
+// ✅ 정제한 프롬프트
+prompt: `
+## 작업 지시서
+
+### 목표
+JWT 기반 로그인 API 엔드포인트를 구현한다.
+
+### 맥락
+- 프로젝트: selfpost (Spring Boot 3.x, Java 17)
+- 기술 스택: Spring Security + JWT, MyBatis, MariaDB
+- 계획서: docs/plans/2026-02-27-login.md
+
+### 작업 범위
+1. src/main/java/.../controller/AuthController.java — POST /api/auth/login 엔드포인트
+2. src/main/java/.../service/AuthService.java — 인증 로직
+3. src/main/java/.../dto/LoginRequest.java — 요청 DTO
+
+### 기존 코드 참고
+- 네이밍: camelCase (Java 표준)
+- 기존 컨트롤러 패턴: src/.../controller/UserController.java 참고
+- 응답 형식: ResponseEntity<ApiResponse<T>> 사용
+
+### 성공 기준
+- [ ] POST /api/auth/login 정상 동작
+- [ ] 잘못된 비밀번호 시 401 응답
+- [ ] JWT 토큰 반환 확인
+- [ ] 기존 테스트 깨지지 않음
+
+### 하지 말 것
+- Spring Security 설정(SecurityConfig) 수정 금지
+- 새 라이브러리 추가 금지
+`
+```
+
+---
+
 ## 실행 방식별 동작
 
 ### S 사이즈: 메인 에이전트 직접 실행
@@ -61,15 +127,22 @@ description: |
 3. 각 서브에이전트는 독립 worktree에서 실행된다.
 4. 모든 서브에이전트 완료 후 → 결과를 취합하고 리뷰 파이프라인을 실행한다.
 
-**서브에이전트 지시 형식:**
+**서브에이전트 프롬프트 생성:**
+
+각 서브에이전트에 대해 **프롬프트 정제 절차**를 실행하여 구조화된 지시서를 생성한다.
+`templates/subagent-prompt.md` 형식을 따르되, 해당 서브에이전트의 담당 Step에 맞게 작성한다.
 
 ```
-[서브에이전트 #{N} 지시]
-작업 범위: {담당 Step 목록}
-계획서 경로: docs/plans/YYYY-MM-DD-<기능명>.md
-worktree 경로: .claude/worktrees/{브랜치명}
-완료 조건: 모든 테스트 통과 + 커밋 완료
+Task({
+  subagent_type: "general-purpose",
+  prompt: "정제된 작업 지시서 (templates/subagent-prompt.md 형식)",
+  isolation: "worktree",
+  run_in_background: true  // 메인 컨텍스트 절약
+})
 ```
+
+> **중요**: prompt에 사용자 원문을 그대로 넣지 않는다.
+> 반드시 맥락 추출 → 경로 명시 → 패턴 요약 → 성공 기준 구체화를 거친다.
 
 ### L 사이즈: CTO 팀 구성 후 병렬 실행
 

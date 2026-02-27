@@ -88,20 +88,44 @@ plan.waves[1].tasks.forEach(task => {
 })
 ```
 
-### [5단계] 에이전트 스폰
+### [5단계] 프롬프트 정제 + 에이전트 스폰
+
+각 에이전트를 스폰하기 전에, **반드시 `templates/subagent-prompt.md` 형식으로 프롬프트를 정제**한다.
+메인 맥락에서 프로젝트 정보, 기술 스택, 파일 경로, 코딩 패턴을 추출하여 구조화된 지시서로 변환한다.
+
+**정제 절차 (에이전트당 1회):**
+1. 해당 에이전트의 담당 태스크 확인
+2. 대상 파일 경로를 절대/상대 경로로 명시
+3. 수정 대상 파일의 코딩 패턴 2~3줄로 요약
+4. 성공 기준을 검증 가능한 조건으로 변환
+5. 범위 밖 수정 금지 + 판단 필요 시 "메인에 보고" 지시
 
 ```
 plan.assignments.forEach(assignment => {
+  // 1. 프롬프트 정제
+  const refinedPrompt = buildRefinedPrompt({
+    task: assignment.task,
+    projectContext: currentContext,  // 프로젝트명, 스택, 브랜치
+    filePatterns: extractPatterns(assignment.task.files),  // 코딩 패턴
+    successCriteria: assignment.task.criteria,  // 성공 기준
+    constraints: assignment.task.constraints  // 제약 조건
+  });
+
+  // 2. 정제된 프롬프트로 스폰
   Task({
     subagent_type: assignment.subagentType,
     team_name: "vibecraft-{기능명}",
     name: assignment.agent,
     model: assignment.model,
-    prompt: "...",
-    isolation: "worktree"
+    prompt: refinedPrompt,  // ← 정제된 지시서
+    isolation: "worktree",
+    run_in_background: true  // 메인 컨텍스트 절약
   })
 })
 ```
+
+> **절대 하지 말 것**: 사용자 원문이나 계획서 경로만 달랑 넘기지 않는다.
+> 서브에이전트는 메인의 대화 맥락이 없으므로, 모든 필요 정보를 지시서에 포함해야 한다.
 
 ### [6단계] 모니터링
 

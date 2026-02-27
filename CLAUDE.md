@@ -93,7 +93,7 @@ vibecraft/
 │   ├── preset-loader.js
 │   ├── team-monitor.js        # TeammateIdle/SubagentStop 훅 핸들러
 │   └── team-session-restore.js # 이전 팀 세션 복구
-├── templates/                # 문서 템플릿 8개
+├── templates/                # 문서 템플릿 9개
 │   ├── plan.md               # 구현 계획서
 │   ├── design.md             # 설계 문서
 │   ├── check-report.md       # 점검 보고서
@@ -101,7 +101,8 @@ vibecraft/
 │   ├── review-checklist.md   # 리뷰 체크리스트
 │   ├── deploy-checklist.md   # 배포 체크리스트
 │   ├── project-init.md       # 프로젝트 초기화
-│   └── sprint-summary.md     # 스프린트 요약
+│   ├── sprint-summary.md     # 스프린트 요약
+│   └── subagent-prompt.md    # 서브에이전트 작업 지시서
 ├── output-styles/            # 응답 포맷
 │   ├── learning.md           # 학습 모드
 │   └── standard.md           # 기본 모드
