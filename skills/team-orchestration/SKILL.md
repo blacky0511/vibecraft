@@ -1,167 +1,237 @@
 ---
 name: team-orchestration
 description: |
-  L 사이즈 대형 작업에서 cto-lead 에이전트가 CTO 팀을 자동 구성하고 병렬 실행을 조율하는 스킬.
-  작업 내용을 분석하여 필요한 전문가 에이전트를 선별하고, 각 에이전트에 독립 태스크를 할당한다.
-  병렬 실행 후 결과를 취합하여 메인 에이전트에 반환한다.
+  L 사이즈 대형 작업에서 lib/team/ 엔진을 사용하여 CTO 팀을 자동 구성하고
+  Claude Code 네이티브 API(TeamCreate, TaskCreate, SendMessage)로 병렬 실행을 조율하는 스킬.
+  점수 기반 에이전트 매칭, 의존성 Wave 계산, 실패 자동 복구를 수행한다.
 
   Triggers: 팀, team, 병렬, parallel, CTO, team-orchestration
 ---
 
-# CTO 팀 자동 구성 스킬
+# CTO 팀 자동 구성 스킬 (lib/team/ 엔진 연동)
 
 ## 역할
 
 `executing-plans` 스킬이 L 사이즈 작업으로 판단한 경우 호출된다.
-`cto-lead` 에이전트가 계획서를 분석하고, 필요한 전문가 에이전트를 자동 선별하여 팀을 구성한다.
-각 에이전트는 독립 태스크를 병렬로 실행하며, 완료 후 결과를 `cto-lead`가 취합한다.
+`lib/team/` 엔진이 계획서를 분석하여 의존성 그래프, Wave, 에이전트 매칭을 자동 수행한다.
+Claude Code 네이티브 API를 직접 호출하여 팀을 생성하고 태스크를 관리한다.
 
 ---
 
-## cto-lead의 역할
+## 핵심 철학: "네이티브 API 위의 지능 계층"
 
-`cto-lead` 에이전트는 다음 책임을 가진다.
-
-1. **작업 분석**: 계획서 전체를 읽고 레이어별(프론트엔드, 백엔드, DB, 테스트 등) 작업을 분류한다.
-2. **팀 선별**: 아래 기준에 따라 필요한 에이전트를 결정한다.
-3. **태스크 분배**: 각 에이전트에게 담당 Step 목록과 필요한 컨텍스트를 전달한다.
-4. **진행 모니터링**: 각 에이전트의 완료 상태를 추적한다.
-5. **결과 취합**: 모든 에이전트의 결과물을 병합하고 충돌을 해결한다.
+- **상태 관리**: Claude Code 네이티브 API(TeamCreate, TaskList, TaskUpdate)가 담당
+- **판단 로직**: lib/team/ 모듈이 담당 (에이전트 선택, 의존성, 복구)
+- **자체 상태 저장소 없음**: race condition과 세션 손실 문제를 원천 차단
 
 ---
 
-## 팀 구성 기준
+## 실행 절차 (네이티브 API 연동)
 
-계획서 내용을 분석하여 아래 규칙에 따라 에이전트를 자동 선별한다.
+### [1단계] 실행 계획 생성
 
-| 조건 | 투입 에이전트 | 이유 |
-|------|--------------|------|
-| UI 컴포넌트, 페이지, CSS 변경 포함 | `frontend-builder` | 프론트엔드 전문 구현 |
-| API 엔드포인트, 서버 로직 변경 포함 | `backend-builder` | 백엔드 전문 구현 |
-| DB 스키마, 마이그레이션, 쿼리 변경 포함 | `backend-builder` (DB 전담) | DB 변경은 백엔드와 함께 처리 |
-| 테스트 작성이 필요한 경우 | `test-writer` (항상 포함) | 품질 보증은 항상 필수 |
-| 공통 유틸, 타입, 설정 변경 포함 | `cto-lead` 직접 처리 | 전체에 영향을 미치므로 리드가 담당 |
+계획서의 Step 목록을 lib/team/ 엔진에 전달하여 실행 계획을 생성한다.
 
-**규칙:**
-- `test-writer`는 다른 에이전트의 구현이 완료된 후 실행한다. (의존 관계 존재)
-- `frontend-builder`와 `backend-builder`는 독립적이므로 병렬 실행 가능하다.
-- DB 변경이 있을 경우 `backend-builder`가 먼저 완료된 후 `frontend-builder`가 API 연동을 진행한다.
+```javascript
+const team = require('./lib/team');
+const config = team.loadConfig();
+
+// Step 목록을 전달하면 자동으로:
+// - 태스크 유형 분류 (정규식 패턴 매칭)
+// - 의존성 그래프 구성 (명시적 + 암시적)
+// - Wave 계산 (병렬/순차 결정)
+// - 점수 기반 에이전트 매칭
+const plan = team.createExecutionPlan(steps, config);
+```
+
+**steps 형식:**
+```javascript
+const steps = [
+  { id: 'step-1', description: 'DB 테이블 생성 마이그레이션' },
+  { id: 'step-2', description: 'REST API 엔드포인트 구현' },
+  { id: 'step-3', description: 'UI 컴포넌트 페이지 구현' },
+  { id: 'step-4', description: '통합 테스트 작성' }
+];
+// taskType은 description에서 자동 분류된다.
+// dependsOn이 없으면 암시적 의존성이 자동 추가된다.
+// (DB → 백엔드, 백엔드 → 프론트엔드, 구현 → 테스트)
+```
+
+### [2단계] 팀 구성 보고
+
+```javascript
+const report = team.buildTeamReport(plan, config);
+// 사용자에게 보고 → 실행 승인 요청
+```
+
+### [3단계] 네이티브 TeamCreate 호출
+
+```
+TeamCreate({
+  team_name: "vibecraft-{기능명}",
+  description: "L 사이즈 작업: {기능 설명}"
+})
+```
+
+### [4단계] Wave별 TaskCreate + 의존성 설정
+
+```
+// Wave 0 태스크 (의존성 없음 → 즉시 실행 가능)
+plan.waves[0].tasks.forEach(task => {
+  TaskCreate({ subject: task.id, description: task.description })
+})
+
+// Wave 1+ 태스크 (선행 Wave 태스크 완료 후 실행)
+plan.waves[1].tasks.forEach(task => {
+  TaskCreate({ subject: task.id, description: task.description })
+  TaskUpdate({ taskId, addBlockedBy: task.dependencies })
+})
+```
+
+### [5단계] 에이전트 스폰
+
+```
+plan.assignments.forEach(assignment => {
+  Task({
+    subagent_type: assignment.subagentType,
+    team_name: "vibecraft-{기능명}",
+    name: assignment.agent,
+    model: assignment.model,
+    prompt: "...",
+    isolation: "worktree"
+  })
+})
+```
+
+### [6단계] 모니터링
+
+- **TeammateIdle 훅**: `scripts/team-monitor.js`가 자동 로깅
+- **TaskList 폴링**: 주기적으로 진행률 확인
+
+```javascript
+const progress = team.calculateProgress(taskListResult, plan);
+const report = team.buildProgressReport(progress, plan, teamName);
+team.saveProgressReport(report, config.progressReportPath);
+```
+
+### [7단계] 실패 복구
+
+태스크 실패 시 자동 복구 전략을 결정한다.
+
+```javascript
+const failureType = team.detectFailureType(failedTask, config);
+const recovery = team.analyzeFailure(
+  failedTask, failureType, currentAgent, allTasks, config
+);
+
+// recovery.strategy: 'retry_same' | 'reassign' | 'escalate'
+// recovery.action: 수행할 행동
+// recovery.newAgent: 재할당 대상 (재할당인 경우)
+```
+
+복구 흐름:
+1. **retry_same**: 같은 에이전트로 재시도 (최대 config.retryLimit회)
+2. **reassign**: 다른 에이전트로 재할당 (점수 기반 자동 선택)
+3. **escalate**: CTO에게 에스컬레이션 (수동 판단 필요)
+
+### [8단계] 완료 보고
+
+```javascript
+const completionReport = team.buildCompletionReport(progress, plan);
+// 리뷰 파이프라인으로 전달
+```
 
 ---
 
-## 팀 구성 예시
+## 에이전트 매칭 알고리즘
 
-### 예시 1: 풀스택 기능 추가
+lib/team/agent-matcher.js가 점수 기반으로 최적 에이전트를 선택한다.
+
+| 단계 | 기준 | 점수 |
+|------|------|------|
+| 1 | 필수 능력 필터 | 없으면 탈락 |
+| 2 | 선호 능력 보너스 | +10점/개 |
+| 3 | 현재 부하 감점 | -15점/진행중 태스크 |
+| 4 | 비용 효율 보너스 | low: +5, medium: 0, high: -5 |
+
+**에이전트별 능력:**
+
+| 에이전트 | 핵심 능력 | 모델 | 비용 |
+|---------|----------|------|------|
+| cto-lead | architecture, coordination | sonnet | medium |
+| frontend-builder | ui, css, component | sonnet | medium |
+| backend-builder | api, database, server | sonnet | medium |
+| test-writer | unit-test, integration-test | sonnet | medium |
+| debugger | debugging, profiling | sonnet | medium |
+| code-reviewer | review, quality, security | haiku | low |
+| code-simplifier | refactoring, simplification | haiku | low |
+| doc-writer | documentation, readme | haiku | low |
+| deploy-manager | deploy, ci-cd | haiku | low |
+| gap-detector | gap-analysis, coverage | haiku | low |
+| code-analyzer | analysis, dependency-check | haiku | low |
+
+---
+
+## 의존성 Wave 시스템
+
+lib/team/task-planner.js가 의존성 그래프를 구성하고 Wave를 계산한다.
+
+### 암시적 의존성 규칙
+
+코드 수정 없이 config.implicitDependencies로 확장 가능하다.
 
 ```
-계획서 내용: 로그인 페이지 UI + 인증 API + JWT 저장 + 테스트
-
-투입 팀:
-  - cto-lead: 타입 정의, 공통 유틸
-  - frontend-builder: 로그인 페이지 UI, 폼 컴포넌트
-  - backend-builder: 인증 API, JWT 발급 로직
-  - test-writer: 인증 흐름 통합 테스트, 단위 테스트
-
-실행 순서:
-  1단계 (병렬): cto-lead + frontend-builder + backend-builder
-  2단계 (순차): test-writer (1단계 완료 후)
+database → backend    (DB 먼저, 그 다음 API)
+backend → frontend    (API 먼저, 그 다음 UI)
+분석 → 구현           (분석 후 구현)
+구현 → test           (구현 후 테스트)
+test → review         (테스트 후 리뷰)
+review → deploy       (리뷰 후 배포)
 ```
 
-### 예시 2: 백엔드 전용 작업
+### Wave 예시
 
 ```
-계획서 내용: DB 테이블 추가 + API 3개 신규 개발
-
-투입 팀:
-  - backend-builder: DB 마이그레이션 + API 구현
-  - test-writer: API 테스트
-
-실행 순서:
-  1단계: backend-builder
-  2단계: test-writer
-```
-
-### 예시 3: 프론트엔드 리팩토링
-
-```
-계획서 내용: 컴포넌트 10개 리팩토링 + 스타일 개선
-
-투입 팀:
-  - frontend-builder: 컴포넌트 리팩토링
-  - test-writer: 스냅샷 테스트 업데이트
-
-실행 순서:
-  1단계: frontend-builder
-  2단계: test-writer
+Wave 0 (병렬): DB 마이그레이션 + 공통 설정
+Wave 1 (병렬): API 구현 + 백엔드 로직
+Wave 2 (병렬): UI 컴포넌트 + 페이지
+Wave 3 (순차): 통합 테스트
 ```
 
 ---
 
-## 에이전트 지시 형식
+## 설정 오버라이드
 
-각 에이전트에게 아래 형식으로 태스크를 전달한다.
+프로젝트 루트에 `vibecraft.team.json`을 생성하면 기본 설정을 오버라이드할 수 있다.
 
-```
-[{에이전트명} 태스크 지시]
-
-담당 Step: {Step 번호 목록}
-계획서 경로: docs/plans/YYYY-MM-DD-<기능명>.md
-worktree 경로: .claude/worktrees/{기능명}-{에이전트명}
-브랜치명: feature/{기능명}-{에이전트명}
-
-선행 조건: {선행 에이전트명} 완료 후 실행 / 없음
-완료 조건: 모든 담당 Step의 테스트 통과 + 커밋 완료
-
-참고 컨텍스트:
-- {관련 파일 경로}
-- {공유해야 할 인터페이스 정의}
-```
-
----
-
-## 병렬 실행 및 결과 취합
-
-### 병렬 실행 규칙
-
-1. 의존 관계가 없는 에이전트는 동시에 실행한다.
-2. 의존 관계가 있는 에이전트는 순서를 정하고 선행 에이전트 완료 후 실행한다.
-3. 한 에이전트가 실패하면 → `cto-lead`가 즉시 알림을 받고 대응 방안을 결정한다.
-
-### 결과 취합 절차
-
-1. 모든 에이전트의 worktree 브랜치를 `cto-lead`가 순서대로 머지한다.
-2. 머지 충돌 발생 시 → `cto-lead`가 직접 해결한다.
-3. 취합 완료 후 → `executing-plans`의 리뷰 파이프라인으로 전달한다.
-
-```bash
-# 결과 취합 예시
-git checkout feature/{기능명}-통합
-git merge feature/{기능명}-frontend-builder
-git merge feature/{기능명}-backend-builder
-git merge feature/{기능명}-test-writer
+```json
+{
+  "maxTeammates": 4,
+  "retryLimit": 3,
+  "taskTimeoutMs": 300000,
+  "scoring": {
+    "preferredCapabilityBonus": 15,
+    "loadPenalty": -20
+  },
+  "taskTypes": {
+    "custom-type": {
+      "required": ["api"],
+      "preferred": ["database"],
+      "defaultAgent": "backend-builder"
+    }
+  }
+}
 ```
 
 ---
 
-## 팀 구성 보고 형식
+## 세션 복구
 
-팀 구성이 완료되면 사용자에게 아래 형식으로 보고한다.
-
-```
-## CTO 팀 구성 완료
-
-**작업 규모**: L (Step N개)
-**투입 에이전트**: N명
-
-| 에이전트 | 담당 Step | 실행 순서 |
-|---------|---------|---------|
-| cto-lead | Step 1~2 | 1단계 |
-| frontend-builder | Step 3~6 | 1단계 (병렬) |
-| backend-builder | Step 7~11 | 1단계 (병렬) |
-| test-writer | Step 12~14 | 2단계 |
-
-지금 바로 실행할까요?
-```
+세션이 종료/재시작되면:
+1. `scripts/team-session-restore.js`가 SessionStart 훅에서 실행
+2. `docs/team-progress.md` 존재 여부 확인
+3. 있으면 이전 세션 정보를 안내
+4. AI가 보고서를 읽고 TaskList와 대조하여 이어서 진행
 
 ---
 
@@ -171,16 +241,17 @@ git merge feature/{기능명}-test-writer
 executing-plans (L 사이즈 판단)
     │
     ▼
-team-orchestration (현재 스킬: 팀 구성)
+team-orchestration (lib/team/ 엔진 연동)
     │
-    ├── cto-lead: 분석 + 조율
-    ├── frontend-builder: 프론트엔드 구현 (병렬)
-    ├── backend-builder: 백엔드/DB 구현 (병렬)
-    └── test-writer: 테스트 작성 (후순위)
-              │
-              ▼
-         결과 취합 (cto-lead)
-              │
-              ▼
-         executing-plans 리뷰 파이프라인으로 반환
+    ├─ [1] task-planner.createExecutionPlan() → 의존성 + Wave + 에이전트 매칭
+    ├─ [2] report-builder.buildTeamReport() → 사용자에게 팀 구성 보고
+    ├─ [3] TeamCreate("vibecraft-{기능명}")
+    ├─ [4] Wave별 TaskCreate + TaskUpdate(blockedBy)
+    ├─ [5] 각 에이전트 Task(subagent, team_name) 스폰
+    ├─ [6] 모니터링 (TeammateIdle 훅 + TaskList + progress-tracker)
+    ├─ [7] 실패 시 error-recovery.analyzeFailure()
+    ├─ [8] 모든 Wave 완료 → buildCompletionReport()
+    │
+    ▼
+리뷰 파이프라인 (code-simplifier → external-reviewer → gap-detector)
 ```

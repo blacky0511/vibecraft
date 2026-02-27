@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-hooks.json",
-  "description": "vibecraft 훅 설정 - 세션 시작 + 프리셋 로드 + 영향 분석 + 커밋 검증 + 안전 가드",
+  "description": "vibecraft 훅 설정 - 세션 시작 + 프리셋 로드 + 팀 복구 + 영향 분석 + 커밋 검증 + 안전 가드 + 팀 모니터",
   "hooks": {
     "SessionStart": [
       {
@@ -15,6 +15,33 @@
           {
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/preset-loader.js\"",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/team-session-restore.js\"",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/team-monitor.js\"",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/team-monitor.js\"",
             "timeout": 5000
           }
         ]
