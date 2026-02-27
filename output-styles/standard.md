@@ -1,5 +1,5 @@
 ---
-name: vibecraft-standard
+name: standard
 description: |
   기본 응답 모드 - 간결하고 실용적인 결과 위주.
   불필요한 설명 없이 핵심만 전달.

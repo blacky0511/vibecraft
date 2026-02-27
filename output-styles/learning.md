@@ -1,5 +1,5 @@
 ---
-name: vibecraft-learning
+name: learning
 description: |
   학습 모드 - vibecraft 워크플로우 설명 + 개발자 성장 지식을 함께 제공.
   바이브코딩 비개발자가 자연스럽게 개발 실력을 키울 수 있도록 안내한다.
