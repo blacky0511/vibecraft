@@ -17,6 +17,28 @@ description: |
 사용자의 입력을 분석하여 아래 5가지 모드 중 적절한 것을 자동 선택하고,
 해당 모드의 스킬을 호출한다.
 
+## 모드 판별 우선순위
+
+키워드가 여러 모드에 겹칠 때, 아래 우선순위 순서대로 판별한다.
+숫자가 낮을수록 먼저 판별한다.
+
+| 우선순위 | 모드 | 판별 기준 | 예시 |
+|:---:|------|---------|------|
+| 0 | 환영/인사 | 인사만 단독으로 있을 때 (작업 요청 없음) | "안녕", "도움" |
+| 1 | 단순 수정 | 수치/스타일 키워드 + 1~3줄 변경 | "폰트 키워줘", "색상 바꿔" |
+| 2 | 디버깅 | 에러/버그/실패 키워드 존재 | "에러 났어", "안 돼" |
+| 3 | 코드 리뷰 | 리뷰/검토 키워드 | "리뷰해줘", "봐줘" |
+| 4 | 배포 | 배포/릴리즈 키워드 | "배포해줘", "서버에 올려" |
+| 5 | 새 기능 | "만들어줘/추가해줘/구현해줘" + 기존 프로젝트 맥락 | "로그인 만들어줘" |
+| 6 | 프로젝트 시작 | "만들자/시작하자" + 프로젝트가 아직 없는 맥락 | "블로그 만들자" |
+
+**복수 매칭 판별 규칙:**
+
+1. **인사 + 작업**: 작업 모드 우선 ("안녕 로그인 만들어줘" → 새 기능)
+2. **새 기능 vs 프로젝트 시작**: 현재 프로젝트에 코드 파일이 이미 있으면 "새 기능", 비어있거나 없으면 "프로젝트 시작"
+3. **디버깅 + 기능 요청**: 디버깅 우선 ("로그인 에러 고쳐줘" → 디버깅)
+4. **판별 불가**: 사용자에게 선택지 제시
+
 ## 모드 판별 규칙
 
 ### 0. 환영/인사 모드 (최우선)
@@ -61,7 +83,7 @@ description: |
 
 **동작**: vibecraft:simple-tweak 스킬 호출
 
-> 이 모드는 다른 모드보다 **우선 판별**한다. 단순 수정인데 새 기능 모드로 빠지면 과도한 워크플로우가 실행되기 때문이다.
+> 우선순위 1번. 수치/스타일 키워드가 감지되면 새 기능이나 디버깅보다 먼저 이 모드를 적용한다.
 
 ### 6. 배포 모드
 
@@ -112,16 +134,40 @@ ralph-loop으로 돌리면 더 효율적일 수 있습니다.
 **중요**: ralph-loop을 강요하지 않는다. 사용자가 학습 목적이면 vibecraft가 더 낫다.
 제안만 하고 선택은 사용자에게 맡긴다.
 
+## 모드별 활성 스킬 맵
+
+모드가 판별되면, 해당 모드에서 **참조해야 할 스킬만 집중**한다.
+목록에 없는 스킬은 현재 모드에서 무시해도 된다.
+
+| 모드 | 핵심 스킬 | 보조 스킬 (필요 시만) |
+|------|----------|---------------------|
+| 환영/인사 | welcome-guide | - |
+| 단순 수정 | simple-tweak | - |
+| 새 기능 (S) | smart-pdca, iron-law, verification | impact-analysis |
+| 새 기능 (M) | smart-pdca, iron-law, brainstorming, executing-plans, verification | impact-analysis, pre-flight-check, git-workflow |
+| 새 기능 (L) | smart-pdca, iron-law, brainstorming, writing-plans, team-orchestration, executing-plans, verification | impact-analysis, pre-flight-check, naming-consultant, test-strategy-advisor, git-workflow |
+| 디버깅 | systematic-debugging, iron-law, verification | session-context |
+| 코드 리뷰 | code-review-request, code-review-receive | external-reviewer, consistency-enforcer |
+| 배포 | deploy-guide | rollback-strategy |
+| 프로젝트 시작 | project-kickoff, brainstorming, writing-plans | dependency-auditor |
+
+**항상 활성화 (모든 모드 공통)**: cto-mindset, session-context
+
+**프리셋 (기술 스택별 자동)**: preset-nextjs / preset-react / preset-spring / preset-python / preset-general
+
+> 이 맵의 목적은 39개 스킬 전체를 매번 참조하지 않고, **현재 모드에 관련된 스킬에만 집중**하여 컨텍스트를 효율적으로 사용하는 것이다.
+
 ## 감지 후 행동
 
 1. 모드를 판별한다
-2. ralph-loop 적합 여부를 판단한다
-3. 사용자에게 감지된 모드를 알린다:
+2. **위 스킬 맵에서 해당 모드의 핵심 스킬을 확인한다**
+3. ralph-loop 적합 여부를 판단한다
+4. 사용자에게 감지된 모드를 알린다:
    > "새 기능 추가 요청으로 감지했습니다. vibecraft 워크플로우를 시작합니다."
    또는 (ralph-loop 적합 시):
    > "이 작업은 ralph-loop으로 돌리면 효율적일 수 있습니다. 어떻게 진행할까요?"
-4. vibecraft:smart-pdca 스킬을 호출하여 작업 크기를 판단한다
-5. 크기에 따라 적절한 워크플로우를 실행한다
+5. vibecraft:smart-pdca 스킬을 호출하여 작업 크기를 판단한다
+6. 크기에 따라 적절한 워크플로우를 실행한다
 
 ## 모드 판별이 애매한 경우
 

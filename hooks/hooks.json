@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-hooks.json",
-  "description": "vibecraft 훅 설정 - 세션 시작 시 자동 감지 + 기술 스택 프리셋 로드",
+  "description": "vibecraft 훅 설정 - 세션 시작 + 프리셋 로드 + 영향 분석 + 커밋 검증 + 안전 가드",
   "hooks": {
     "SessionStart": [
       {
@@ -15,6 +15,32 @@
           {
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/preset-loader.js\"",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "파일을 수정하기 전에 다음을 확인하세요:\n\n1. 이 파일을 import하거나 사용하는 다른 파일이 있는지 Grep으로 확인했는가?\n2. 공통 컴포넌트, 유틸 함수, API 엔드포인트를 수정하는 경우 영향받는 파일 목록을 파악했는가?\n3. 영향받는 파일이 4개 이상이면 사용자에게 먼저 알렸는가?\n\n새 파일 생성, 단순 수치/스타일 변경, 문서 수정은 이 검사를 건너뛰어도 됩니다."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/commit-guard.js\"",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/git-safety-guard.js\"",
             "timeout": 5000
           }
         ]

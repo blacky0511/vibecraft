@@ -27,11 +27,13 @@ function detectPreset() {
       if (deps && deps['next']) {
         results.push('preset-nextjs');
       } else if (deps && deps['react']) {
-        results.push('preset-nextjs');
+        // React만 있고 Next.js가 없는 경우 (Vite+React, CRA 등)
+        results.push('preset-react');
       } else {
         results.push('preset-general');
       }
-    } catch {
+    } catch (error) {
+      console.error(`[vibecraft] package.json 파싱 실패: ${error.message}`);
       results.push('preset-general');
     }
   }
@@ -57,5 +59,10 @@ function detectPreset() {
   return [...new Set(results)];
 }
 
-const presets = detectPreset();
-console.log(`감지된 기술 스택 프리셋: ${presets.join(', ')}`);
+try {
+  const presets = detectPreset();
+  console.log(`감지된 기술 스택 프리셋: ${presets.join(', ')}`);
+} catch (error) {
+  console.error(`[vibecraft] 프리셋 감지 실패: ${error.message}`);
+  console.log('감지된 기술 스택 프리셋: preset-general');
+}

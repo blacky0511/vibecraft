@@ -26,7 +26,7 @@ AI가 상황을 자동 감지하고, 사용자는 아이디어만 제공하면 �
 vibecraft/
 ├── .claude-plugin/           # 플러그인 메타데이터
 │   └── plugin.json
-├── skills/                   # 스킬 37개
+├── skills/                   # 스킬 39개
 │   ├── # 핵심 엔진
 │   ├── auto-detect/          # 상황 자동 감지 + ralph-loop 라우팅
 │   ├── smart-pdca/           # 작업 크기별 PDCA 조절
@@ -68,6 +68,7 @@ vibecraft/
 │   ├── # 프리셋
 │   ├── preset-spring/        # Spring Boot 프리셋
 │   ├── preset-nextjs/        # Next.js 프리셋
+│   ├── preset-react/         # React (Vite/CRA) 프리셋
 │   ├── preset-python/        # Python 프리셋
 │   └── preset-general/       # 범용 프리셋
 ├── agents/                   # 에이전트 11개

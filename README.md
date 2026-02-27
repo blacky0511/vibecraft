@@ -53,7 +53,7 @@ Claude Code에서 위 명령어 한 줄이면 끝입니다.
 
 ---
 
-## 스킬 구성 (37개)
+## 스킬 구성 (39개)
 
 ### 핵심 엔진
 
@@ -111,7 +111,8 @@ Claude Code에서 위 명령어 한 줄이면 끝입니다.
 
 | 스킬 | 대상 |
 |------|------|
-| preset-nextjs | Next.js / React / TypeScript |
+| preset-nextjs | Next.js (App Router) / TypeScript |
+| preset-react | React (Vite, CRA 등 Next.js 제외) |
 | preset-spring | Spring Boot / Java |
 | preset-python | Python / Flask / Django / FastAPI |
 | preset-general | 기타 프로젝트 (범용) |
