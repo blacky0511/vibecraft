@@ -26,7 +26,7 @@ AI가 상황을 자동 감지하고, 사용자는 아이디어만 제공하면 �
 vibecraft/
 ├── .claude-plugin/           # 플러그인 메타데이터
 │   └── plugin.json
-├── skills/                   # 스킬 39개
+├── skills/                   # 스킬 41개
 │   ├── # 핵심 엔진
 │   ├── auto-detect/          # 상황 자동 감지 + ralph-loop 라우팅
 │   ├── smart-pdca/           # 작업 크기별 PDCA 조절
@@ -59,6 +59,8 @@ vibecraft/
 │   ├── user-empathy-lens/    # 사용자 시선 UX 점검
 │   ├── doc-autopilot/        # 코드-문서 동기화
 │   ├── skill-progression/    # 학습 진도 추적
+│   ├── analysis-delegation/  # 분석 작업 서브에이전트 위임
+│   ├── deep-analysis/        # 4단계 심층 분석 방법론
 │   ├── # 리뷰 & 배포
 │   ├── code-review-request/  # 코드 리뷰 요청
 │   ├── code-review-receive/  # 리뷰 피드백 처리
@@ -71,7 +73,7 @@ vibecraft/
 │   ├── preset-react/         # React (Vite/CRA) 프리셋
 │   ├── preset-python/        # Python 프리셋
 │   └── preset-general/       # 범용 프리셋
-├── agents/                   # 에이전트 11개
+├── agents/                   # 에이전트 12개
 │   ├── cto-lead.md           # 팀 리드
 │   ├── code-analyzer.md      # 코드 분석
 │   ├── frontend-builder.md   # 프론트엔드 구현
@@ -82,12 +84,15 @@ vibecraft/
 │   ├── code-simplifier.md    # 코드 간소화
 │   ├── deploy-manager.md     # 배포 관리
 │   ├── doc-writer.md         # 문서 작성
-│   └── gap-detector.md       # 누락 항목 탐지
+│   ├── gap-detector.md       # 누락 항목 탐지
+│   └── data-analyst.md       # 데이터 분석
 ├── hooks/                    # 훅 설정
 │   └── hooks.json
 ├── scripts/                  # 훅 실행 스크립트
 │   ├── session-start.js
-│   └── preset-loader.js
+│   ├── preset-loader.js
+│   ├── team-monitor.js        # TeammateIdle/SubagentStop 훅 핸들러
+│   └── team-session-restore.js # 이전 팀 세션 복구
 ├── templates/                # 문서 템플릿 8개
 │   ├── plan.md               # 구현 계획서
 │   ├── design.md             # 설계 문서
@@ -103,6 +108,15 @@ vibecraft/
 ├── commands/                 # 슬래시 명령어
 │   └── vibecraft.md          # /vibecraft 도움말
 ├── lib/                      # 공통 유틸리티
+│   └── team/                  # 팀 엔진 (네이티브 API 위의 지능 계층)
+│       ├── index.js           # 통합 진입점
+│       ├── constants.js       # 상수 + 한국어 메시지 템플릿
+│       ├── config.js          # 설정 로더 (기본값 + vibecraft.team.json 오버라이드)
+│       ├── agent-matcher.js   # 점수 기반 에이전트 선택 엔진
+│       ├── task-planner.js    # 의존성 그래프 + Wave 계산
+│       ├── progress-tracker.js # 진행률 추적 + 디스크 보고서
+│       ├── error-recovery.js  # 실패 복구 (재시도/재할당/에스컬레이션)
+│       └── report-builder.js  # 한국어 팀 보고서 생성
 └── docs/plans/               # 설계 문서
 ```
 
@@ -111,6 +125,7 @@ vibecraft/
 - Phase 2 (워크플로우): 완료 - 모드별 스킬 6개
 - Phase 3 (서브에이전트 + 리뷰): 완료 - 실행/리뷰 스킬 3개, 에이전트 11개
 - Phase 4 (완성도): 완료 - 나머지 스킬 4개, 프리셋 4개, 템플릿 8개
+- Phase 5 (팀 엔진): 완료 - lib/team/ 8모듈, 훅 스크립트 2개, team-orchestration 스킬 업그레이드
 
 ## 코딩 규칙
 - 모든 텍스트: 한국어
