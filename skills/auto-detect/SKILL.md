@@ -26,6 +26,7 @@ description: |
 |:---:|------|---------|------|
 | 0 | 환영/인사 | 인사만 단독으로 있을 때 (작업 요청 없음) | "안녕", "도움" |
 | 1 | 단순 수정 | 수치/스타일 키워드 + 1~3줄 변경 | "폰트 키워줘", "색상 바꿔" |
+| 1.5 | 레퍼런스 디자인 | UI/디자인 키워드 + 페이지/사이트 키워드 동시 감지 | "랜딩페이지 만들어줘", "이 사이트 참고해서 UI 만들어" |
 | 2 | 디버깅 | 에러/버그/실패 키워드 존재 | "에러 났어", "안 돼" |
 | 3 | 분석 | 데이터 분석/조회/통계 키워드 (코드 변경 아님) | "누락률 분석해줘", "DB 데이터 뽑아줘" |
 | 4 | 코드 리뷰 | 리뷰/검토 키워드 | "리뷰해줘", "봐줘" |
@@ -52,31 +53,42 @@ description: |
 
 > "안녕 로그인 만들어줘"처럼 인사 + 작업 요청이 함께 있으면 인사는 스킵하고 작업 모드로 진행한다.
 
-### 1. 새 기능 모드
+### 1. 레퍼런스 디자인 모드
+
+**키워드**: "랜딩페이지", "UI", "디자인", "레퍼런스", "참고 사이트", "페이지 만들어", "웹사이트"
+
+**조건**: UI/디자인 관련 키워드와 페이지/사이트 관련 키워드가 동시에 감지될 때. URL이 포함되어 있으면 모드 A(크롤링), 없으면 모드 B(분위기 선택)로 진입.
+
+**동작**: vibecraft:reference-design 스킬 호출
+
+> "버튼 색상 바꿔줘"처럼 단순 수정에 해당하면 단순 수정 모드(우선순위 1)가 먼저 적용된다.
+> "로그인 기능 만들어줘"처럼 UI가 아닌 기능 자체가 중심이면 새 기능 모드가 적용된다.
+
+### 2. 새 기능 모드
 
 **키워드**: "만들어줘", "추가해줘", "구현해줘", "넣어줘", "기능", "feature"
 
 **동작**: vibecraft:new-feature 스킬 호출
 
-### 2. 디버깅 모드
+### 3. 디버깅 모드
 
 **키워드**: "안 돼", "에러", "버그", "오류", "안됨", "실패", "크래시", "fix", "bug", "error"
 
 **동작**: vibecraft:systematic-debugging 스킬 호출
 
-### 3. 프로젝트 시작 모드
+### 4. 프로젝트 시작 모드
 
 **키워드**: "만들자", "시작하자", "앱", "사이트", "프로젝트", "init", "새 프로젝트"
 
 **동작**: vibecraft:project-kickoff 스킬 호출
 
-### 4. 코드 리뷰 모드
+### 5. 코드 리뷰 모드
 
 **키워드**: "리뷰", "봐줘", "검토", "review", "코드 봐"
 
 **동작**: vibecraft:code-review-request 스킬 호출
 
-### 5. 단순 수정 모드
+### 6. 단순 수정 모드
 
 **키워드**: "크기", "간격", "폰트", "색상", "패딩", "마진", "키워줘", "줄여줘", "늘려줘", "굵게", "얇게", "밝게", "어둡게", "~로 바꿔"
 
@@ -86,7 +98,7 @@ description: |
 
 > 우선순위 1번. 수치/스타일 키워드가 감지되면 새 기능이나 디버깅보다 먼저 이 모드를 적용한다.
 
-### 6. 분석 모드
+### 7. 분석 모드
 
 **키워드**: "분석", "분석해줘", "데이터 뽑아", "DB 조회", "쿼리", "로그 분석", "통계", "리포트", "패턴 분석", "추출", "집계", "현황", "트렌드", "비교해줘"
 
@@ -97,7 +109,7 @@ description: |
 > "분석" 키워드가 있어도 목적이 코드 이해("이 함수 분석해줘")면 코드 리뷰로,
 > 버그 수정("에러 로그 분석해줘")이면 디버깅으로 라우팅한다.
 
-### 7. 배포 모드
+### 8. 배포 모드
 
 **키워드**: "배포", "릴리즈", "deploy", "release", "서버에 올려"
 
@@ -209,6 +221,7 @@ ralph-loop으로 돌리면 더 효율적일 수 있습니다.
 | 환영/인사 | welcome-guide | - |
 | 단순 수정 | simple-tweak | - |
 | 분석 | analysis-delegation, deep-analysis | session-context |
+| 레퍼런스 디자인 | reference-design, smart-pdca, iron-law, verification | writing-plans, team-orchestration |
 | 새 기능 (S) | smart-pdca, iron-law, verification | impact-analysis |
 | 새 기능 (M) | smart-pdca, iron-law, brainstorming, executing-plans, verification | impact-analysis, pre-flight-check, git-workflow |
 | 새 기능 (L) | smart-pdca, iron-law, brainstorming, writing-plans, team-orchestration, executing-plans, verification | impact-analysis, pre-flight-check, naming-consultant, test-strategy-advisor, git-workflow |

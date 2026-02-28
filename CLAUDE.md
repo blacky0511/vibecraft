@@ -26,7 +26,7 @@ AI가 상황을 자동 감지하고, 사용자는 아이디어만 제공하면 �
 vibecraft/
 ├── .claude-plugin/           # 플러그인 메타데이터
 │   └── plugin.json
-├── skills/                   # 스킬 41개
+├── skills/                   # 스킬 42개
 │   ├── # 핵심 엔진
 │   ├── auto-detect/          # 상황 자동 감지 + ralph-loop 라우팅
 │   ├── smart-pdca/           # 작업 크기별 PDCA 조절
@@ -38,6 +38,7 @@ vibecraft/
 │   ├── brainstorming/        # 아이디어 → 설계
 │   ├── writing-plans/        # 설계 → 구현 계획
 │   ├── new-feature/          # 새 기능 오케스트레이션
+│   ├── reference-design/     # 레퍼런스 기반 UI 디자인
 │   ├── simple-tweak/         # 단순 수정 안내 (DIY 가이드)
 │   ├── systematic-debugging/ # 체계적 디버깅
 │   ├── project-kickoff/      # 프로젝트 시작 가이드
