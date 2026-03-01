@@ -132,6 +132,21 @@ brainstorming → 계획 → 설계 → 팀 구성 → 서브에이전트 병렬
 
 ---
 
+### Do → Check 사이: 오류 시뮬레이션 (`error-simulation`)
+
+실행 완료 후, 검증 전에 수정된 코드의 잠재 오류를 시뮬레이션한다.
+발견된 문제를 수정하고, 새 문제가 없을 때까지 반복한다.
+
+| 크기 | 시뮬레이션 |
+|------|-----------|
+| S | **스킵** — 단순 수정에 시뮬레이션은 낭비 |
+| M | **1~2회** — 파일 간 연결 오류, 엣지 케이스 점검 |
+| L | **최대 3회** — 엣지 케이스 + 호환성 + 안정성 전체 점검 |
+
+조기 통과: 시뮬레이션에서 새로운 문제가 발견되지 않으면 즉시 통과.
+
+---
+
 ### Check (검증) - 설계 대비 달성률 확인
 
 | 크기 | 행동 |
@@ -174,10 +189,10 @@ smart-pdca (현재 스킬: 크기 판별)
     │
     ├── S → 바로 실행 → verification
     │
-    ├── M → 계획(간략) → executing-plans → verification
+    ├── M → 계획(간략) → executing-plans → error-simulation(1~2회) → verification
     │
     └── L → brainstorming → writing-plans → team-orchestration
-                → executing-plans → review-pipeline → verification
+                → executing-plans → error-simulation(최대 3회) → review-pipeline → verification
 ```
 
 ### 각 연동 스킬 역할
@@ -188,6 +203,7 @@ smart-pdca (현재 스킬: 크기 판별)
 | `writing-plans` | L만 | 확정된 설계를 단계별 구현 계획으로 문서화 |
 | `executing-plans` | M, L | 서브에이전트 디스패치 및 병렬 실행 관리 |
 | `team-orchestration` | L만 | CTO 팀 구성 — 역할별 서브에이전트 배정 |
+| `error-simulation` | M, L | 실행 후 잠재 오류 시뮬레이션 (S는 스킵) |
 | `verification` | S, M, L | 완료 전 필수 검증 게이트 |
 
 ---
