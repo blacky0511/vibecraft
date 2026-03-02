@@ -152,7 +152,7 @@ brainstorming → 계획 → 설계 → 팀 구성 → 서브에이전트 병렬
 | 크기 | 행동 |
 |------|------|
 | S | 테스트 실행 + 동작 확인만 (`verification` 스킬 호출) |
-| M | 테스트 통과 + 간략 검증 보고 (`verification` 스킬 호출) |
+| M | `code-simplifier` 단독 실행 → 테스트 통과 + 간략 검증 보고 (`verification` 스킬 호출) |
 | L | 전체 리뷰 파이프라인 실행 (code-simplifier → external-reviewer → gap-detector) |
 
 ---
@@ -189,7 +189,7 @@ smart-pdca (현재 스킬: 크기 판별)
     │
     ├── S → 바로 실행 → verification
     │
-    ├── M → 계획(간략) → executing-plans → error-simulation(1~2회) → verification
+    ├── M → 계획(간략) → executing-plans → code-simplifier → error-simulation(1~2회) → verification
     │
     └── L → brainstorming → writing-plans → team-orchestration
                 → executing-plans → error-simulation(최대 3회) → review-pipeline → verification
