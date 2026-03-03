@@ -93,6 +93,7 @@ vibecraft/
 ├── scripts/                  # 훅 실행 스크립트
 │   ├── session-start.js
 │   ├── preset-loader.js
+│   ├── sync-version.js         # plugin.json → marketplace.json 버전 동기화
 │   ├── team-monitor.js        # TeammateIdle/SubagentStop 훅 핸들러
 │   └── team-session-restore.js # 이전 팀 세션 복구
 ├── templates/                # 문서 템플릿 9개
@@ -129,6 +130,10 @@ vibecraft/
 - Phase 3 (서브에이전트 + 리뷰): 완료 - 실행/리뷰 스킬 3개, 에이전트 11개
 - Phase 4 (완성도): 완료 - 나머지 스킬 4개, 프리셋 4개, 템플릿 8개
 - Phase 5 (팀 엔진): 완료 - lib/team/ 8모듈, 훅 스크립트 2개, team-orchestration 스킬 업그레이드
+
+## 버전 관리 규칙
+- plugin.json의 version을 변경할 때, 반드시 `node scripts/sync-version.js`를 실행하여 marketplace.json도 동기화한다.
+- 수동으로 marketplace.json을 직접 수정하지 않는다. 항상 sync-version.js를 통해 동기화한다.
 
 ## 코딩 규칙
 - 모든 텍스트: 한국어
