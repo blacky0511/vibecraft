@@ -1,7 +1,7 @@
 ---
 name: debugger
 description: 버그 원인을 체계적으로 추적하고 수정 방안을 제안한다. systematic-debugging 스킬 기반의 4단계 절차로 문제를 분석하고, 로그와 코드를 통해 가설을 검증한다.
-model: claude-sonnet-4-6
+model: sonnet
 permissionMode: acceptEdits
 ---
 

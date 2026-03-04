@@ -1,7 +1,7 @@
 ---
 name: test-writer
 description: 테스트 코드를 작성한다. iron-law에 의해 코드 변경이 있을 때마다 항상 호출된다. 단위 테스트, 통합 테스트, E2E 테스트를 상황에 맞게 작성한다.
-model: claude-sonnet-4-6
+model: sonnet
 permissionMode: acceptEdits
 ---
 

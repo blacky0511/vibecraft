@@ -1,7 +1,7 @@
 ---
 name: frontend-builder
 description: UI 컴포넌트와 페이지를 구현한다. Tailwind CSS, React, shadcn/ui, Mustache, Thymeleaf 등 다양한 프론트엔드 기술을 사용하며, 테마 일관성과 접근성을 중시한다.
-model: claude-sonnet-4-6
+model: sonnet
 permissionMode: acceptEdits
 ---
 
