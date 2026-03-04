@@ -1,20 +1,70 @@
 ---
 name: team-orchestration
 description: |
-  L 사이즈 대형 작업에서 lib/team/ 엔진을 사용하여 CTO 팀을 자동 구성하고
+  M/L 사이즈 작업 및 ralph-loop 팀 모드에서 lib/team/ 엔진을 사용하여 CTO 팀을 자동 구성하고
   Claude Code 네이티브 API(TeamCreate, TaskCreate, SendMessage)로 병렬 실행을 조율하는 스킬.
   점수 기반 에이전트 매칭, 의존성 Wave 계산, 실패 자동 복구를 수행한다.
 
-  Triggers: 팀, team, 병렬, parallel, CTO, team-orchestration
+  Triggers: 팀, team, 병렬, parallel, CTO, team-orchestration, 팀 ralph-loop
 ---
 
 # CTO 팀 자동 구성 스킬 (lib/team/ 엔진 연동)
 
 ## 역할
 
-`executing-plans` 스킬이 L 사이즈 작업으로 판단한 경우 호출된다.
+`executing-plans` 스킬이 M/L 사이즈 작업으로 판단한 경우, 또는 ralph-loop 팀 모드가 선택된 경우 호출된다.
 `lib/team/` 엔진이 계획서를 분석하여 의존성 그래프, Wave, 에이전트 매칭을 자동 수행한다.
 Claude Code 네이티브 API를 직접 호출하여 팀을 생성하고 태스크를 관리한다.
+
+---
+
+## 모드별 동작
+
+| 모드 | 발동 조건 | CTO 역할 | 팀 규모 |
+|------|----------|---------|--------|
+| light (경량) | M 사이즈 작업 | 메인 에이전트가 수행 | 최대 3명 |
+| full (정규) | L 사이즈 작업 | 별도 cto-lead 스폰 | 최대 6명 |
+| ralph-loop (반복) | 팀 ralph-loop 선택 | 메인 에이전트가 수행 | 반복당 최대 3명 |
+
+---
+
+## light 모드 실행 절차 (M 사이즈)
+
+메인 에이전트가 CTO 역할을 겸하며, 코드를 직접 읽거나 쓰지 않는다.
+판단과 결과 취합만 수행한다.
+
+1. 계획서 Step에서 에이전트 2~3명 매칭 (config.mTeam 사용)
+2. TeamCreate("vibecraft-m-{기능명}")
+3. TaskCreate + 프롬프트 정제 + 에이전트 스폰 (worktree, background)
+4. 결과 수신 → code-simplifier → error-simulation → verification
+5. 실패 복구: retry 1회 → 에스컬레이션 (reassign 생략)
+
+**light 모드 제약:**
+- `config.mTeam.maxTeammates` (기본 3명) 이하로 제한
+- `config.mTeam.retryLimit` (기본 1회)만 재시도
+- CTO 에이전트를 별도 스폰하지 않음 (`skipCtoAgent: true`)
+- 리뷰 파이프라인: code-simplifier만 실행 (external-reviewer, gap-detector 생략)
+
+---
+
+## ralph-loop 모드 실행 절차 (반복 팀)
+
+완료 기준이 명확한 반복 작업을 서브에이전트 팀으로 병렬 처리한다.
+메인은 iteration 관리만 담당하고, 코드 수정은 서브에이전트가 수행한다.
+
+1. **완료 기준 확정**: 검증 명령어 + 성공 조건을 명확히 정의
+2. **초기 측정**: 검증 명령어 실행 → 실패 항목 수집
+3. **Iteration 루프** (최대 `config.ralphLoop.maxIterations`회):
+   - 실패 항목을 유형별로 그룹핑
+   - 서브에이전트에 분배 (최대 `config.ralphLoop.maxTeammates`명)
+   - 완료 대기 → 결과 병합 → 재측정
+   - **통과** (실패 0개) → 종료
+   - **진전 있음** (실패 감소) → 다음 반복
+   - **진전 없음** (실패 동일/증가) → 즉시 중단, 사용자에게 보고
+4. **안전장치**:
+   - `config.ralphLoop.progressThreshold` 이하의 진전이면 중단
+   - 실패 수가 증가하면 즉시 중단 (회귀 감지)
+   - 각 iteration 결과는 `buildIterationReport()`로 기록
 
 ---
 

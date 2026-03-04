@@ -127,7 +127,7 @@ brainstorming → 계획 → 설계 → 팀 구성 → 서브에이전트 병렬
 | 크기 | 행동 |
 |------|------|
 | S | 메인 에이전트가 직접 코드 작성 및 수정 |
-| M | 서브에이전트 1~2개 병렬 실행 (`executing-plans` 스킬 호출) |
+| M | 메인이 CTO + 서브에이전트 2~3개 병렬 (`team-orchestration` 경량 → `executing-plans`) |
 | L | CTO 팀 구성 후 다수의 서브에이전트 병렬 실행 (`team-orchestration` → `executing-plans` 스킬 호출) |
 
 ---
@@ -189,7 +189,7 @@ smart-pdca (현재 스킬: 크기 판별)
     │
     ├── S → 바로 실행 → verification
     │
-    ├── M → 계획(간략) → executing-plans → code-simplifier → error-simulation(1~2회) → verification
+    ├── M → 계획(간략) → team-orchestration(경량) → executing-plans → code-simplifier → error-simulation(1~2회) → verification
     │
     └── L → brainstorming → writing-plans → team-orchestration
                 → executing-plans → error-simulation(최대 3회) → review-pipeline → verification
@@ -202,7 +202,7 @@ smart-pdca (현재 스킬: 크기 판별)
 | `brainstorming` | L만 | 아이디어 구체화 — 질문을 통해 요구사항 확정 |
 | `writing-plans` | L만 | 확정된 설계를 단계별 구현 계획으로 문서화 |
 | `executing-plans` | M, L | 서브에이전트 디스패치 및 병렬 실행 관리 |
-| `team-orchestration` | L만 | CTO 팀 구성 — 역할별 서브에이전트 배정 |
+| `team-orchestration` | M(경량), L(정규) | CTO 팀 구성 — M은 메인이 CTO, L은 전용 에이전트 |
 | `error-simulation` | M, L | 실행 후 잠재 오류 시뮬레이션 (S는 스킵) |
 | `verification` | S, M, L | 완료 전 필수 검증 게이트 |
 

@@ -40,7 +40,7 @@ auto-detect → new-feature (현재 스킬)
 | 크기 | 조건 | 확인 횟수 | 핵심 흐름 |
 |------|------|:---:|------|
 | S | 파일 1~2개 | 0회 | 바로 구현 → verification → 완료 |
-| M | 파일 3~5개 | 1회 | 간략 계획 [확인] → executing-plans → verification → 완료 |
+| M | 파일 3~5개 | 1회 | 간략 계획 [확인] → team-orchestration(경량) → executing-plans → verification → 완료 |
 | L | 파일 6개+ | 2회 | brainstorming → writing-plans [확인] → 설계 [확인] → team-orchestration → executing-plans → review-pipeline → verification → 완료 |
 
 ---
@@ -54,7 +54,7 @@ auto-detect → new-feature (현재 스킬)
 | `brainstorming` | M(간략), L(상세) | 요구사항 구체화 |
 | `writing-plans` | L만 | 계획서/설계서 문서화 |
 | `executing-plans` | M, L | 서브에이전트 병렬 실행 |
-| `team-orchestration` | L만 | CTO 팀 구성 및 역할 배정 |
+| `team-orchestration` | M(경량), L(정규) | CTO 팀 구성 — M은 메인이 CTO, L은 전용 에이전트 |
 | `review-pipeline` | L만 | 3단계 코드 리뷰 |
 | `verification` | S, M, L 항상 | 최종 검증 게이트 |
 
@@ -82,8 +82,9 @@ smart-pdca
     ├── M ──────── brainstorming(간략) ──→ 간략 계획
     │                                         [확인 1회]
     │                                              │
+    │                                   team-orchestration(경량)
     │                                    executing-plans
-    │                                    (서브에이전트 1~2개)
+    │                                    (서브에이전트 2~3개)
     │                                         iron-law
     │                                              │
     │                                        verification

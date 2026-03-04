@@ -32,7 +32,7 @@ description: |
 | 규모 | 기준 | 실행 방식 |
 |------|------|-----------|
 | S (소형) | Step 1~3개, 단일 파일 또는 단순 수정 | 메인 에이전트 직접 실행 |
-| M (중형) | Step 4~8개, 2개 이상 파일 연관 | 서브에이전트 1~2개 병렬 실행 |
+| M (중형) | Step 4~8개, 2개 이상 파일 연관 | `team-orchestration` 경량 모드 → 메인이 CTO, 서브에이전트 2~3개 병렬 |
 | L (대형) | Step 9개 이상, 다중 레이어 변경 | `team-orchestration` 스킬 호출 → CTO 팀 구성 |
 
 ---
@@ -116,30 +116,25 @@ JWT 기반 로그인 API 엔드포인트를 구현한다.
 - TDD 순서(테스트 작성 → 실패 확인 → 구현 → 통과 확인 → 커밋)를 준수한다.
 - 모든 Step 완료 후 → 리뷰 파이프라인을 실행한다.
 
-### M 사이즈: 서브에이전트 1~2개 병렬 실행
+### M 사이즈: 경량 CTO 팀 실행 (team-orchestration light 모드)
 
 ```
-서브에이전트를 생성하여 태스크를 병렬로 실행합니다.
+경량 CTO 팀을 구성하여 서브에이전트 2~3개로 병렬 실행합니다.
+메인 에이전트가 CTO 역할을 겸합니다.
 ```
 
-1. 계획서의 Step을 의존 관계 기준으로 그룹 분리한다.
-2. 독립적인 그룹은 별도 서브에이전트에 할당한다.
-3. 각 서브에이전트는 독립 worktree에서 실행된다.
-4. 모든 서브에이전트 완료 후 → 결과를 취합하고 리뷰 파이프라인을 실행한다.
+**핵심 원칙**: 메인은 코드를 직접 읽거나 쓰지 않는다. 판단과 결과 취합만.
+
+1. `team-orchestration` 스킬을 **light 모드**로 호출한다.
+2. 계획서의 Step을 분석하여 에이전트 2~3명을 매칭한다.
+3. TeamCreate → TaskCreate → 프롬프트 정제 → 에이전트 스폰 (worktree, background)
+4. 모든 에이전트 완료 후 → code-simplifier → error-simulation → verification
+5. 실패 시 retry 1회 → 에스컬레이션 (reassign 생략)
 
 **서브에이전트 프롬프트 생성:**
 
 각 서브에이전트에 대해 **프롬프트 정제 절차**를 실행하여 구조화된 지시서를 생성한다.
 `templates/subagent-prompt.md` 형식을 따르되, 해당 서브에이전트의 담당 Step에 맞게 작성한다.
-
-```
-Task({
-  subagent_type: "general-purpose",
-  prompt: "정제된 작업 지시서 (templates/subagent-prompt.md 형식)",
-  isolation: "worktree",
-  run_in_background: true  // 메인 컨텍스트 절약
-})
-```
 
 > **중요**: prompt에 사용자 원문을 그대로 넣지 않는다.
 > 반드시 맥락 추출 → 경로 명시 → 패턴 요약 → 성공 기준 구체화를 거친다.
@@ -226,8 +221,8 @@ writing-plans (계획서 생성)
 executing-plans (현재 스킬: 계획 실행)
     │
     ├── S → 메인 에이전트 직접 실행
-    ├── M → 서브에이전트 1~2개 병렬
-    └── L → team-orchestration 호출
+    ├── M → team-orchestration (경량 모드) → 서브에이전트 2~3개
+    └── L → team-orchestration (정규 모드) → CTO + 다수 에이전트
               │
               ▼
          리뷰 파이프라인

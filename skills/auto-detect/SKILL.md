@@ -151,8 +151,9 @@ ralph-loop이 적합하다고 판단되면 선택지를 제공한다:
 이 작업은 완료 기준이 명확하고 반복 개선형이라,
 ralph-loop으로 돌리면 더 효율적일 수 있습니다.
 
-1. "ralph-loop으로 해줘" - AI가 자동 반복하며 완료까지 진행
-2. "같이 하자" - vibecraft 워크플로우로 단계별 진행 (학습 가능)
+1. "팀 ralph-loop으로 해줘" - CTO가 서브에이전트 팀으로 병렬 반복 (추천, 컨텍스트 보호)
+2. "ralph-loop으로 해줘" - 메인 세션에서 순차 반복 (간단한 작업에 적합)
+3. "같이 하자" - vibecraft 워크플로우로 단계별 진행 (학습 가능)
 ```
 
 **중요**: ralph-loop을 강요하지 않는다. 사용자가 학습 목적이면 vibecraft가 더 낫다.
@@ -203,13 +204,14 @@ ralph-loop으로 돌리면 더 효율적일 수 있습니다.
 
 ### ralph-loop vs 에이전트팀 판별 기준
 
-| 기준 | ralph-loop | 에이전트팀 |
-|------|-----------|----------|
-| 작업 성격 | 같은 패턴 반복 | 다른 전문 영역 병렬 |
-| 완료 기준 | 수치화 가능 (테스트 통과, 점수) | 기능 완성 |
-| 판단 필요 | 거의 없음 (기계적 반복) | 각 영역별 판단 필요 |
-| 파일 범위 | 많지만 같은 유형 | 다양한 유형 (UI + API + DB) |
-| 비용 | 중간 (1개 에이전트 반복) | 높음 (여러 에이전트 동시) |
+| 기준 | ralph-loop (순차) | 팀 ralph-loop | 에이전트팀 |
+|------|-----------|------------|----------|
+| 작업 성격 | 같은 패턴 반복 | 같은 패턴 반복 (대량) | 다른 전문 영역 병렬 |
+| 완료 기준 | 수치화 가능 (테스트 통과, 점수) | 수치화 가능 | 기능 완성 |
+| 판단 필요 | 거의 없음 (기계적 반복) | 거의 없음 | 각 영역별 판단 필요 |
+| 파일 범위 | 적음~중간 | 많지만 같은 유형 | 다양한 유형 (UI + API + DB) |
+| 컨텍스트 보호 | 낮음 (메인 소진) | 높음 (서브에이전트 격리) | 높음 |
+| 비용 | 낮음 (1개 에이전트) | 중간 (반복당 2~3개) | 높음 (여러 에이전트 동시) |
 
 ## 모드별 활성 스킬 맵
 
@@ -223,7 +225,7 @@ ralph-loop으로 돌리면 더 효율적일 수 있습니다.
 | 분석 | analysis-delegation, deep-analysis | session-context |
 | 레퍼런스 디자인 | reference-design, smart-pdca, iron-law, verification | writing-plans, team-orchestration |
 | 새 기능 (S) | smart-pdca, iron-law, verification | impact-analysis |
-| 새 기능 (M) | smart-pdca, iron-law, brainstorming, executing-plans, verification | impact-analysis, pre-flight-check, git-workflow |
+| 새 기능 (M) | smart-pdca, iron-law, brainstorming, executing-plans, team-orchestration, verification | impact-analysis, pre-flight-check, git-workflow |
 | 새 기능 (L) | smart-pdca, iron-law, brainstorming, writing-plans, team-orchestration, executing-plans, verification | impact-analysis, pre-flight-check, naming-consultant, test-strategy-advisor, git-workflow |
 | 디버깅 | systematic-debugging, iron-law, verification | session-context |
 | 코드 리뷰 | code-review-request, code-review-receive | external-reviewer, consistency-enforcer |
