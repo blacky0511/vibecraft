@@ -10,21 +10,29 @@ const fs = require('fs');
 const path = require('path');
 
 const pluginPath = path.join(__dirname, '..', '.claude-plugin', 'plugin.json');
-const marketplacePath = path.join(__dirname, '..', '.claude-plugin', 'marketplace.json');
+const marketplacePaths = [
+  path.join(__dirname, '..', '.claude-plugin', 'marketplace.json'),
+  path.join(__dirname, '..', 'marketplace.json'),
+];
 
 const plugin = JSON.parse(fs.readFileSync(pluginPath, 'utf8'));
-const marketplace = JSON.parse(fs.readFileSync(marketplacePath, 'utf8'));
 
-const oldVersion = marketplace.plugins[0].version;
-const newVersion = plugin.version;
+for (const marketplacePath of marketplacePaths) {
+  if (!fs.existsSync(marketplacePath)) continue;
 
-marketplace.plugins[0].version = newVersion;
-marketplace.plugins[0].description = plugin.description;
+  const marketplace = JSON.parse(fs.readFileSync(marketplacePath, 'utf8'));
+  const oldVersion = marketplace.plugins[0].version;
+  const newVersion = plugin.version;
 
-fs.writeFileSync(marketplacePath, JSON.stringify(marketplace, null, 2) + '\n', 'utf8');
+  marketplace.plugins[0].version = newVersion;
+  marketplace.plugins[0].description = plugin.description;
 
-if (oldVersion !== newVersion) {
-  console.log(`버전 동기화 완료: ${oldVersion} → ${newVersion}`);
-} else {
-  console.log(`버전 동일: ${newVersion} (변경 없음)`);
+  fs.writeFileSync(marketplacePath, JSON.stringify(marketplace, null, 2) + '\n', 'utf8');
+
+  const label = marketplacePath.includes('.claude-plugin') ? '.claude-plugin/' : '루트';
+  if (oldVersion !== newVersion) {
+    console.log(`[${label}] 버전 동기화 완료: ${oldVersion} → ${newVersion}`);
+  } else {
+    console.log(`[${label}] 버전 동일: ${newVersion} (변경 없음)`);
+  }
 }
