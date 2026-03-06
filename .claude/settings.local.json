@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:claudemarketplaces.com)",
+      "WebFetch(domain:docs.claude.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:workingbruno.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
+    ]
+  },
+  "outputStyle": "vibecraft:vibecraft-learning"
+}
