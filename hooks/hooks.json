@@ -60,19 +60,6 @@
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/git-safety-guard.js\"",
             "timeout": 5000
-          },
-          {
-            "type": "prompt",
-            "prompt": "명령어에 npm install, yarn add, pip install 등 패키지 설치가 포함되어 있으면, 설치 전에 dependency-auditor 스킬의 체크리스트를 따르세요: 1) 패키지 크기/번들 영향 확인 2) 마지막 업데이트 시점 3) 기존 의존성에 같은 기능이 있는지 확인. 패키지 설치가 아니면 이 메시지를 무시하세요."
-          }
-        ]
-      },
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "기존 파일을 수정합니다. impact-analysis 원칙을 떠올리세요: 이 파일을 import/사용하는 다른 파일이 있는지 확인하고, 수정이 다른 곳에 영향을 줄 수 있다면 사용자에게 알려주세요. 단순 오타나 스타일 수정이면 이 메시지를 무시하세요."
           }
         ]
       }
