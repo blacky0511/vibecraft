@@ -241,10 +241,32 @@ public class SecurityConfig {
 
 ---
 
-## 9. 코드 작성 시 주의사항
+## 9. 흔한 실수 방지 (AI 자동 적용)
 
-- `@Autowired` 필드 주입 대신 **생성자 주입**을 사용한다. (Lombok `@RequiredArgsConstructor` 활용)
-- `Optional`을 적극 활용하고, `.get()` 직접 호출 대신 `.orElseThrow()`를 사용한다.
-- `System.out.println` 대신 **SLF4J Logger** (`@Slf4j`)를 사용한다.
-- 하나의 메서드는 하나의 역할만 담당한다. (단일 책임 원칙)
-- Entity를 Controller 응답에 직접 반환하지 않는다. 반드시 DTO로 변환한다.
+코드 작성 시 아래 패턴을 자동으로 피한다.
+
+| 실수 | 올바른 방법 |
+|------|-----------|
+| `@Autowired` 필드 주입 | 생성자 주입 (`@RequiredArgsConstructor`) |
+| `Optional.get()` 직접 호출 | `.orElseThrow()` 또는 `.orElse()` 사용 |
+| `System.out.println` 디버깅 | SLF4J Logger (`@Slf4j`) 사용 |
+| Entity를 API 응답에 직접 반환 | 반드시 DTO로 변환 후 반환 |
+| Service에 `@Transactional` 누락 | 읽기는 `@Transactional(readOnly = true)`, 쓰기는 `@Transactional` |
+| N+1 쿼리 방치 | `@EntityGraph` 또는 `fetch join`으로 해결 |
+| CORS에 와일드카드(`*`) 사용 | 허용할 도메인을 명시적으로 지정 |
+| 에러 응답에 스택 트레이스 노출 | 사용자에게는 일반 메시지, 서버에만 상세 로그 |
+
+---
+
+## 10. 구현 순서 (새 기능 추가 시)
+
+```
+1. Entity/DTO 정의 → DB 테이블 설계
+2. Repository 작성 → 데이터 접근 계층
+3. Service 작성 → 비즈니스 로직
+4. Controller 작성 → API 엔드포인트
+5. 예외 처리 추가 → 커스텀 예외 + @ControllerAdvice
+6. 보안 설정 → SecurityFilterChain에 경로 추가
+7. 테스트 작성 → 단위/통합 테스트
+8. 동작 확인 → 전체 흐름 테스트
+```
