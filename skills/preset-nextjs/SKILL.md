@@ -296,9 +296,10 @@ UI가 포함된 작업은 반드시 아래 5단계 순서를 따른다.
 
 ## 11. 보안 규칙
 
-- 환경변수는 `.env.local`에 저장하고, 클라이언트에서 사용할 변수만 `NEXT_PUBLIC_` 접두사를 붙인다.
-- `NEXT_PUBLIC_` 없는 환경변수는 서버에서만 접근 가능 — API 키는 절대 `NEXT_PUBLIC_`을 붙이지 않는다.
-- `dangerouslySetInnerHTML`은 사용하지 않는다. 불가피한 경우 DOMPurify로 반드시 새니타이즈한다.
-- Server Action에서 사용자 입력을 반드시 검증한다. 클라이언트 검증만으로 신뢰하지 않는다.
-- API Route에서 인증이 필요한 엔드포인트는 세션/토큰 확인을 반드시 포함한다.
-- 에러 응답에 스택 트레이스나 DB 구조를 노출하지 않는다. 사용자에게는 일반 메시지만 반환한다.
+> 기본 보안 원칙(환경변수, 입력 검증, 비밀번호 해싱, CORS, 에러 처리)은 security-baseline 스킬이 자동 적용한다.
+> 이 섹션은 Next.js 특화 구현만 다룬다.
+
+- 클라이언트에서 사용할 환경변수만 `NEXT_PUBLIC_` 접두사를 붙인다. API 키는 절대 `NEXT_PUBLIC_` 금지.
+- `dangerouslySetInnerHTML`은 사용하지 않는다. 불가피한 경우 DOMPurify로 새니타이즈한다.
+- Server Action에서 사용자 입력을 반드시 서버에서 검증한다.
+- API Route에서 인증이 필요한 엔드포인트는 세션/토큰 확인을 포함한다.

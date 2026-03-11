@@ -206,6 +206,9 @@ CLAUDE.md 5-4 구조의 테마 JSON을 생성한다.
 [ ] prefers-reduced-motion 미디어 쿼리 존재
 [ ] 시맨틱 HTML (button, a, ul, table 올바르게 사용)
 [ ] 카피라이팅은 placeholder로 표시 ("여기에 제목 입력" 등)
+[ ] 빈 상태(empty state) 디자인에 다음 행동 안내 포함
+[ ] 에러 발생 시 사용자 입력 데이터 유지 (폼 초기화 금지)
+[ ] 에러 메시지에 해결 방법 안내 포함 (What + Why + How)
 ```
 
 ---

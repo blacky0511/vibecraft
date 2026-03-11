@@ -213,10 +213,12 @@ class UserControllerTest {
 
 ## 8. 보안 규칙 (Spring Security + JWT)
 
-- 비밀번호는 `BCryptPasswordEncoder`로 암호화한다. 평문 저장 금지.
-- JWT 시크릿 키는 `application.yml`에 직접 넣지 않는다. 환경 변수(`${JWT_SECRET}`)로 주입한다.
-- CORS 설정은 `SecurityConfig` 또는 `WebMvcConfigurer`에서 명시적으로 허용한다.
-- API 엔드포인트별 접근 권한을 `SecurityFilterChain`에서 명확하게 정의한다.
+> 기본 보안 원칙(환경변수, 입력 검증, 비밀번호 해싱, CORS, 에러 처리)은 security-baseline 스킬이 자동 적용한다.
+> 이 섹션은 Spring 특화 구현만 다룬다.
+
+- `SecurityFilterChain`에서 API 엔드포인트별 접근 권한을 명확하게 정의한다.
+- JWT 시크릿 키는 환경 변수(`${JWT_SECRET}`)로 주입한다.
+- `BCryptPasswordEncoder`를 사용한다.
 
 ```java
 // SecurityConfig 기본 구조 예시

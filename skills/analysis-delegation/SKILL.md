@@ -21,6 +21,7 @@ description: |
 서브에이전트(Task 도구)로 위임하여 컨텍스트를 보호한다.
 
 모든 분석은 **deep-analysis 4단계 방법론**을 따른다.
+상세 방법론은 `references/deep-analysis-methodology.md`를 참고한다.
 1차 결론에서 멈추지 않고, 교란 변수 탐색 → 코호트 추적 → 인과 검증까지 수행한다.
 
 ---

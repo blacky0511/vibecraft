@@ -9,7 +9,7 @@ description: |
   iron-law, verification과 연동하여 코드 완성도를 높인다.
   "고쳤으니 끝"이 아니라 "고친 코드가 다른 문제를 만들지 않는가"를 확인한다.
 
-  Triggers: 코드 수정 완료, 구현 완료, 실행 단계 종료
+  Triggers: 오류 시뮬레이션, error-simulation
 ---
 
 # 오류 시뮬레이션

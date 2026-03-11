@@ -26,7 +26,7 @@ AI가 상황을 자동 감지하고, 사용자는 아이디어만 제공하면 �
 vibecraft/
 ├── .claude-plugin/           # 플러그인 메타데이터
 │   └── plugin.json
-├── skills/                   # 스킬 44개
+├── skills/                   # 스킬 40개
 │   ├── # 핵심 엔진
 │   ├── auto-detect/          # 상황 자동 감지 + ralph-loop 라우팅
 │   ├── smart-pdca/           # 작업 크기별 PDCA 조절
@@ -56,14 +56,10 @@ vibecraft/
 │   ├── naming-consultant/    # 변수/함수명 품질 제안
 │   ├── error-message-designer/ # 사용자 친화적 에러 메시지
 │   ├── consistency-enforcer/ # 프로젝트 패턴 일관성 감시
-│   ├── refactoring-radar/    # 코드 복잡도 감지/정리 제안
+│   ├── refactoring-radar/    # 코드 복잡도 감지 + 기술 부채 기록
 │   ├── test-strategy-advisor/ # 테스트 우선순위 가이드
-│   ├── tech-debt-tracker/    # 기술 부채 기록/리마인드
-│   ├── user-empathy-lens/    # 사용자 시선 UX 점검
 │   ├── doc-autopilot/        # 코드-문서 동기화
-│   ├── skill-progression/    # 학습 진도 추적
-│   ├── analysis-delegation/  # 분석 작업 서브에이전트 위임
-│   ├── deep-analysis/        # 4단계 심층 분석 방법론
+│   ├── analysis-delegation/  # 분석 작업 서브에이전트 위임 (deep-analysis 내장)
 │   ├── # 리뷰 & 배포
 │   ├── code-review-request/  # 코드 리뷰 요청
 │   ├── code-review-receive/  # 리뷰 피드백 처리
