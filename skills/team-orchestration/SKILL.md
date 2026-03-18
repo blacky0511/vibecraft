@@ -52,19 +52,124 @@ Claude Code 네이티브 API를 직접 호출하여 팀을 생성하고 태스�
 완료 기준이 명확한 반복 작업을 서브에이전트 팀으로 병렬 처리한다.
 메인은 iteration 관리만 담당하고, 코드 수정은 서브에이전트가 수행한다.
 
-1. **완료 기준 확정**: 검증 명령어 + 성공 조건을 명확히 정의
-2. **초기 측정**: 검증 명령어 실행 → 실패 항목 수집
-3. **Iteration 루프** (최대 `config.ralphLoop.maxIterations`회):
-   - 실패 항목을 유형별로 그룹핑
-   - 서브에이전트에 분배 (최대 `config.ralphLoop.maxTeammates`명)
-   - 완료 대기 → 결과 병합 → 재측정
-   - **통과** (실패 0개) → 종료
-   - **진전 있음** (실패 감소) → 다음 반복
-   - **진전 없음** (실패 동일/증가) → 즉시 중단, 사용자에게 보고
-4. **안전장치**:
-   - `config.ralphLoop.progressThreshold` 이하의 진전이면 중단
-   - 실패 수가 증가하면 즉시 중단 (회귀 감지)
-   - 각 iteration 결과는 `buildIterationReport()`로 기록
+ralph-loop은 독립 모드가 아니라, 기존 모드(새 기능/디버깅 등)와
+크기(S/M/L) 위에 얹히는 반복 실행 방식이다.
+
+### 입력 (호출자가 전달)
+
+| 항목 | 설명 | 예시 |
+|------|------|------|
+| 검증 명령어 | 실패 여부를 판정하는 명령어 | `npm test`, `npx tsc --noEmit` |
+| 성공 조건 | 검증 명령어의 성공 판정 기준 | "exit code 0", "실패 0개" |
+| 실패 파서 | 검증 명령어 출력에서 실패 항목을 추출하는 방법 | 아래 참조 |
+
+### 실패 항목 파싱 방법
+
+검증 명령어의 출력을 파싱하여 구조화된 실패 항목 목록을 만든다.
+
+**자동 감지되는 형식:**
+
+| 도구 | 출력 형식 | 파싱 방법 |
+|------|----------|----------|
+| Jest/Vitest | `FAIL src/foo.test.ts` | 파일명 + 테스트명 추출 |
+| pytest | `FAILED tests/test_foo.py::test_bar` | 파일명::테스트명 추출 |
+| TypeScript (tsc) | `src/foo.ts(10,5): error TS2345` | 파일명(행,열): 에러코드 추출 |
+| ESLint | `src/foo.ts:10:5: error ...` | 파일명:행:열: 규칙 추출 |
+| Gradle/Maven | 스택트레이스에서 테스트 클래스명 | 테스트 클래스.메서드 추출 |
+
+**파싱 불가 시**: AI가 출력을 읽고 수동으로 실패 항목을 구조화한다.
+
+### 실패 항목 구조
+
+```json
+{
+  "file": "src/auth/login.service.ts",
+  "line": 45,
+  "type": "test-failure | type-error | lint-error | build-error",
+  "message": "Expected 200 but received 401",
+  "testName": "should return JWT token"
+}
+```
+
+### Iteration 루프
+
+1. **초기 측정**: 검증 명령어 실행 → 실패 항목 파싱 → 실패 N개
+
+2. **그룹핑**: 실패 항목을 서브에이전트에 분배하기 위해 그룹화
+
+   | 그룹핑 기준 | 적용 상황 |
+   |-----------|----------|
+   | 파일별 | 실패가 여러 파일에 분산 (가장 일반적) |
+   | 에러 유형별 | 같은 유형의 에러가 여러 파일에 반복 |
+   | 의존성별 | 에러 간 수정 순서가 있는 경우 |
+
+3. **서브에이전트 분배** (최대 `config.ralphLoop.maxTeammates`명):
+   - 각 서브에이전트에 담당 그룹의 실패 항목 + 검증 명령어 전달
+   - **프롬프트 정제 필수**: templates/subagent-prompt.md 형식으로 정제
+   - worktree 격리 실행
+   - 서브에이전트는 담당 파일만 수정, 범위 밖 수정 금지
+
+4. **서브에이전트 프롬프트 예시**:
+
+   ```
+   ## 작업 지시서
+
+   ### 목표
+   아래 실패 항목을 수정하여 검증 명령어를 통과시킨다.
+
+   ### 검증 명령어
+   npm test -- --testPathPattern="auth"
+
+   ### 담당 실패 항목
+   1. src/auth/login.service.ts:45 — Expected 200 but received 401
+   2. src/auth/login.service.ts:67 — Cannot read property 'email' of undefined
+
+   ### 맥락
+   - 프로젝트: selfpost (Next.js 14, TypeScript)
+   - 최근 수정: AuthController에 JWT 검증 로직 추가
+   - 기존 패턴: src/auth/auth.service.ts 참고
+
+   ### 성공 기준
+   - [ ] npm test -- --testPathPattern="auth" 전체 통과
+   - [ ] 다른 파일 수정 금지
+
+   ### 하지 말 것
+   - 테스트 코드 자체를 수정하지 않는다 (테스트가 맞고 구현이 틀린 것)
+   - 새 패키지 설치하지 않는다
+   ```
+
+5. **결과 병합 + 재측정**:
+   - 모든 서브에이전트 완료 대기
+   - 검증 명령어 재실행 → 실패 항목 재파싱
+   - `buildIterationReport()` 호출 → iteration 보고서 출력
+
+6. **진전 판단**:
+
+   | 상황 | 판정 | 행동 |
+   |------|------|------|
+   | 실패 0개 | 완료 | 루프 종료, 성공 보고 |
+   | 실패 감소 | 진전 있음 | 다음 iteration |
+   | 실패 동일 | 진전 없음 | 즉시 중단 |
+   | 실패 증가 | 회귀 발생 | 즉시 중단 + git 변경사항 리뷰 |
+
+### ralph-loop 완료 후 리뷰 파이프라인
+
+ralph-loop은 "에러 0개"를 만드는 보조 루프이며, 계획 대비 누락 검사와는 역할이 다르다.
+
+| 시나리오 | ralph-loop 완료 후 | 이유 |
+|---------|-------------------|------|
+| A. 디버깅 후 | verification만 재실행 | 기존 기능 수정이라 누락 검사 불필요 |
+| B. 새 기능 후 | verification + gap-detector 재실행 | 계획한 기능이 빠졌는지 확인 필요 |
+| C. 일괄 수정 | verification만 재실행 | 계획서 자체가 간소하므로 gap-detector 불필요 |
+| L 크기 작업 | 기존 리뷰 파이프라인 전체 유지 | 대형 작업은 품질 회귀 위험이 높음 |
+
+### 안전장치
+
+- 최대 반복: `config.ralphLoop.maxIterations` (기본 5회)
+- 최대 팀원: `config.ralphLoop.maxTeammates` (기본 3명)
+- 진전 임계: `config.ralphLoop.progressThreshold` (기본 0 = 1개라도 줄어야 진전)
+- 타임아웃: `config.ralphLoop.taskTimeoutMs` (기본 300초)
+- **회귀 즉시 중단**: 실패 수가 이전보다 증가하면 즉시 중단하고 변경 사항을 보고
 
 ---
 

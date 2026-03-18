@@ -139,9 +139,35 @@ description: |
 
 **동작**: vibecraft:deploy-guide 스킬 호출
 
-## Ralph Loop 제안
+## Ralph Loop 판단 + 라우팅
 
-ralph-loop이 적합한지 판단한다. 완료 기준이 명확하고 반복 개선형 작업이면 ralph-loop을 제안한다. 강요하지 않고 선택지만 제공.
+ralph-loop은 독립 모드가 아니라, 기존 모드(새 기능/디버깅 등)와 크기(S/M/L) 위에 얹히는 **반복 실행 방식**이다.
+모드 판별 우선순위 표에 추가하지 않는다. 기존 모드 판별 후 "실행 방식 제안" 레이어에서 처리한다.
+
+### ralph-loop 적합 조건 (3가지 모두 충족)
+
+1. **완료 기준이 명확**: 검증 명령어가 존재하거나 정의 가능
+   - 예: `npm test`, `npx tsc --noEmit`, `./gradlew test`, `pytest`
+   - 예: "에러 0개", "테스트 전체 통과", "빌드 성공"
+2. **반복 개선형**: 한 번에 전부 고치기 어렵고, 여러 번 수정-확인이 필요
+   - 예: 테스트 실패 N개, 타입 에러 N개, 린트 에러 N개
+3. **실패 항목이 독립적**: 각 실패를 개별적으로 수정 가능
+   - 반례: 에러들이 하나의 근본 원인에서 파생 (이 경우 디버깅이 적합)
+
+### ralph-loop 판단 시점
+
+| 시점 | 조건 | 제안 문구 |
+|------|------|----------|
+| 모드 판별 직후 | 적합 조건 3가지 충족 | "이 작업은 ralph-loop으로 반복 수정하면 효율적입니다. ralph-loop으로 진행할까요?" |
+| verification 실패 시 | 실패 항목 2개 이상 | "검증에서 N개 실패가 발견됐습니다. ralph-loop으로 자동 수정할까요?" |
+| 사용자가 직접 요청 | "ralph-loop으로 해줘" | 즉시 ralph-loop 실행 방식으로 전환 |
+
+### 라우팅
+
+사용자가 ralph-loop을 수락하면:
+1. 현재 모드의 스킬 맵에 **team-orchestration**을 추가
+2. smart-pdca에 `ralphLoop: true` 플래그를 전달
+3. smart-pdca가 크기(S/M/L)와 무관하게 ralph-loop 경로를 실행
 
 ## 에이전트팀 제안
 
@@ -165,6 +191,7 @@ ralph-loop이 적합한지 판단한다. 완료 기준이 명확하고 반복 �
 | 디버깅 | systematic-debugging, iron-law, verification | session-context |
 | 코드 리뷰 | code-review-request, code-review-receive | external-reviewer, consistency-enforcer |
 | 배포 | deploy-guide | rollback-strategy |
+| ralph-loop (모든 모드에서 활성화 가능) | team-orchestration, verification | smart-pdca, iron-law |
 | 프로젝트 시작 | project-kickoff, brainstorming, writing-plans | dependency-auditor |
 
 **항상 활성화 (모든 모드 공통)**: cto-mindset, session-context
@@ -266,3 +293,5 @@ ralph-loop이 적합한지 판단한다. 완료 기준이 명확하고 반복 �
 - 판별 결과를 사용자에게 항상 알려서, 잘못된 판별이면 수정할 수 있게 한다
 - 단순한 질문이나 대화에는 모드를 강제하지 않는다
 - ralph-loop 제안은 강요가 아닌 선택지 제공이다
+- ralph-loop은 새 모드가 아니라 실행 방식이므로 모드 판별 우선순위 표에 추가하지 않는다
+- "ralph-loop으로 해줘" 직접 요청 시에는 모드 판별을 거치지 않고 즉시 smart-pdca에 ralphLoop: true를 전달한다

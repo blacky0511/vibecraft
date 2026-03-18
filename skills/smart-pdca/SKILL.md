@@ -32,6 +32,11 @@ M: research → writing-plans → plan-critic(2회) → 사용자 확인 → exe
    (research.md)  (plan.md)    (plan-review.md)                  (plan.md 읽음)
 
 L: research → brainstorming → writing-plans → plan-critic(3회) → 사용자 확인 → executing-plans → 리뷰 파이프라인 → verification
+
+ralph-loop 진입 시 (크기 무관, S/M/L 위에 얹히는 실행 플래그):
+  → 검증 명령어 확정 → 초기 측정 → iteration 루프 (team-orchestration ralph-loop 모드) → verification
+시나리오 C (일괄 수정형, research/plan 없이 직접 진입):
+  → 간소 plan.md 자동 생성 → 검증 명령어 확정 → 초기 측정 → iteration 루프 → verification
 ```
 
 ---
@@ -153,6 +158,7 @@ R, P 단계 스킵
 | S | 메인 에이전트 직접 실행 |
 | M | team-orchestration 경량 → 서브에이전트 2~3개 병렬 |
 | L | team-orchestration 정규 → CTO 팀 구성 후 다수 서브에이전트 병렬 실행 |
+| ralph-loop | team-orchestration ralph-loop 모드 → 반복 수정 루프 (검증 명령어 기반 iteration) |
 
 ---
 
@@ -190,6 +196,60 @@ R, P 단계 스킵
 | S | 즉시 수정 후 재검증 |
 | M | 미달 항목 목록화 → 수정 → 재검증 |
 | L | 재계획 후 수정 → 리뷰 파이프라인 재실행 → 재검증 |
+
+---
+
+## ralph-loop 실행 방식
+
+ralph-loop은 독립 모드가 아니라, 기존 모드(새 기능/디버깅 등)와
+크기(S/M/L) 위에 얹히는 **반복 실행 플래그**이다.
+크기 판별은 기존대로 하되, ralph-loop 플래그가 켜지면 Do 단계에서 반복 루프를 실행한다.
+
+### ralph-loop 진입 조건
+
+| 진입 경로 | 설명 |
+|----------|------|
+| auto-detect 제안 → 사용자 수락 | 작업 시작 시점에 ralph-loop 적합 판단 |
+| verification 실패 → 자동 제안 | 실행 후 검증에서 실패 항목 2개+ 발견 |
+| systematic-debugging → 잔여 실패 | 디버깅 후 관련 테스트가 여전히 실패 |
+| 사용자 직접 요청 | "ralph-loop으로 해줘", "반복 수정해줘" |
+
+### ralph-loop 실행 흐름
+
+1. **검증 명령어 확정**
+   - 프로젝트 기술 스택에서 자동 감지 (package.json → npm test, build.gradle → ./gradlew test 등)
+   - 사용자에게 확인: "검증 명령어: `npm test` — 맞나요?"
+   - 성공 조건 정의: "실패 0개" 또는 "exit code 0"
+
+2. **초기 측정**
+   - 검증 명령어 실행 → 실패 항목 수집
+   - 실패 항목을 파싱하여 구조화 (파일명, 라인, 에러 유형)
+
+3. **team-orchestration ralph-loop 모드 호출**
+   - 실패 항목 목록 + 검증 명령어 + 성공 조건 전달
+   - 이후는 team-orchestration이 iteration 루프를 관리
+
+4. **iteration 루프 완료 후**
+   - 성공 → verification 재실행 → 완료 선언
+   - 중단 (진전 없음) → 사용자에게 남은 실패 항목 보고 + 수동 처리 안내
+
+### 시나리오 C: 일괄 수정형 직접 진입
+
+"린트 에러 전부 고쳐줘", "타입 에러 다 수정해줘" 같은 요청은
+research.md, plan-review.md 없이 ralph-loop에 직접 진입 가능하다.
+
+단, 추적성을 위해 **간소 plan.md** (목표 + 검증 명령어 + 성공 조건, 10줄 이내)를 자동 생성한다.
+완전 무문서 진입은 허용하지 않는다.
+
+```
+간소 plan.md 예시:
+# 타입 에러 일괄 수정
+
+**목표**: TypeScript strict 모드에서 발생하는 모든 타입 에러를 수정한다
+**검증 명령어**: `npx tsc --noEmit`
+**성공 조건**: 에러 0개
+**실행 방식**: ralph-loop
+```
 
 ---
 

@@ -157,6 +157,35 @@ JWT 기반 로그인 API 엔드포인트를 구현한다.
 - 팀 구성 후, 각 에이전트에 독립 태스크를 할당하고 병렬 실행한다.
 - 자세한 절차는 `team-orchestration` 스킬을 참고한다.
 
+### ralph-loop 모드: 반복 수정 루프
+
+smart-pdca에서 ralphLoop 플래그가 전달되었을 때 실행된다.
+기존 S/M/L 실행이 완료된 후에도, verification 실패 시 ralph-loop으로 전환 가능하다.
+
+ralph-loop은 독립 모드가 아니라, 기존 모드와 크기 위에 얹히는 반복 실행 방식이다.
+
+**실행 절차:**
+
+1. 검증 명령어와 성공 조건을 확인한다
+2. team-orchestration 스킬을 **ralph-loop 모드**로 호출한다
+3. iteration 루프가 완료되면 verification을 재실행한다
+
+**기존 실행과의 관계:**
+
+- S/M/L 실행 후 → verification 실패 → ralph-loop 전환 가능
+- 처음부터 ralph-loop으로 시작 가능 (시나리오 C: 일괄 수정, 간소 plan.md 자동 생성)
+
+**ralph-loop 완료 후 리뷰 파이프라인:**
+
+ralph-loop은 "에러 0개"를 만드는 보조 루프이며, 계획 대비 누락 검사와는 역할이 다르다.
+
+| 시나리오 | ralph-loop 완료 후 | 이유 |
+|---------|-------------------|------|
+| A. 디버깅 후 | verification만 재실행 | 기존 기능 수정이라 누락 검사 불필요 |
+| B. 새 기능 후 | verification + gap-detector 재실행 | 계획한 기능이 빠졌는지 확인 필요 |
+| C. 일괄 수정 | verification만 재실행 | 계획서 자체가 간소하므로 gap-detector 불필요 |
+| L 크기 작업 | 기존 리뷰 파이프라인 전체 유지 | 대형 작업은 품질 회귀 위험이 높음 |
+
 ---
 
 ## worktree 격리 실행
@@ -261,14 +290,22 @@ executing-plans (현재 스킬: 계획 실행)
     │
     ├── S → 메인 에이전트 직접 실행
     ├── M → team-orchestration (경량 모드) → 서브에이전트 2~3개
-    └── L → team-orchestration (정규 모드) → CTO + 다수 에이전트
+    ├── L → team-orchestration (정규 모드) → CTO + 다수 에이전트
+    │         │
+    │         ▼
+    │    리뷰 파이프라인
+    │    (code-simplifier → external-reviewer → gap-detector)
+    │
+    └── ralph-loop → team-orchestration (ralph-loop 모드) → iteration 루프
               │
               ▼
-         리뷰 파이프라인
-         (code-simplifier → external-reviewer → gap-detector)
+         verification 재실행 (시나리오 B/L은 gap-detector도)
               │
               ▼
          구현 완료 보고
+
+    ※ S/M/L 실행 후 verification 실패 시:
+    executing-plans → verification 실패 → ralph-loop 제안 → team-orchestration (ralph-loop 모드)
 
     ※ 방향 재설정 시:
     executing-plans → rollback → writing-plans (범위 축소) → executing-plans

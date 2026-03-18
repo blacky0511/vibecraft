@@ -88,6 +88,22 @@ description: |
 4. **code-simplifier 실행**: 수정 완료 후 `code-simplifier` 에이전트를 호출하여 디버깅 잔해(임시 로그, 주석 처리된 코드, 불필요한 변수 등)를 자동 정리한다.
 5. **수정 후 검증 필수**: `vibecraft:verification` 스킬을 호출하여 검증한다.
 
+### 4단계 이후: ralph-loop 자동 전환
+
+verification 결과 아래 조건에 해당하면 ralph-loop 전환을 제안한다:
+
+| 조건 | 행동 |
+|------|------|
+| 테스트 실패 0개 | 완료 (ralph-loop 불필요) |
+| 테스트 실패 1개 | 직접 수정 후 재검증 (ralph-loop 불필요) |
+| 테스트 실패 2개 이상 | ralph-loop 제안: "관련 테스트 N개가 실패합니다. ralph-loop으로 자동 수정할까요?" |
+| 수정이 다른 테스트를 깨뜨림 | ralph-loop 강력 제안: "수정이 기존 테스트 N개를 깨뜨렸습니다. ralph-loop이 효율적입니다." |
+
+**ralph-loop 전환 시:**
+- 검증 명령어: 해당 테스트 스위트 명령어 (예: `npm test`, `pytest tests/`)
+- 성공 조건: 실패 0개
+- smart-pdca에 `ralphLoop: true` 전달 → executing-plans → team-orchestration ralph-loop 모드
+
 ---
 
 ## 핵심 규칙
@@ -161,8 +177,8 @@ description: |
 | 크기 | 디버깅 워크플로우 |
 |------|----------------|
 | S | 바로 수정 → 확인 (기존 4단계 그대로, R/P 스킵) |
-| M | research 스킬 호출(디버그용 research.md) → plan.md 작성 → 수정 → 검증 |
-| L | research 스킬 호출 → plan.md → plan-critic 리뷰 → 수정 → 검증 → 회귀 테스트 |
+| M | research → plan → 수정 → 검증 → **실패 시 ralph-loop 제안** |
+| L | research → plan → plan-critic → 수정 → 검증 → **실패 시 ralph-loop 제안** |
 
 ### S 크기 (기존과 동일)
 원인이 명확한 단순 버그. 기존 4단계 프로세스를 그대로 사용한다.
