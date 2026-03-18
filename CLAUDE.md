@@ -7,8 +7,9 @@ AI가 상황을 자동 감지하고, 사용자는 아이디어만 제공하면 �
 ## 핵심 철학
 - **AI가 리드, 사용자는 방향만 결정** (바이브코딩 최적화)
 - **자동 감지**: 명령어 없이 입력만으로 워크플로우 자동 선택
-- **스마트 PDCA**: 작업 크기(S/M/L)에 따라 방법론 강도 자동 조절
-- **Iron Law**: 테스트 먼저 + 증거 없이 완료 없다
+- **스마트 RPDCA**: Research-Plan-Do-Check-Act. 작업 크기(S/M/L)에 따라 방법론 강도 자동 조절
+- **Iron Law**: 테스트 먼저 + 증거 없이 완료 없다 + 수정 전 코드 상태 재확인
+- **Plan Critic**: 계획서를 다른 관점(서브에이전트 + Codex MCP)으로 자동 리뷰
 - **범용 + 프리셋**: 어떤 프로젝트에서든 사용 가능, 기술 스택별 맞춤 지원
 
 ## 기술 스택
@@ -26,21 +27,22 @@ AI가 상황을 자동 감지하고, 사용자는 아이디어만 제공하면 �
 vibecraft/
 ├── .claude-plugin/           # 플러그인 메타데이터
 │   └── plugin.json
-├── skills/                   # 스킬 40개
+├── skills/                   # 스킬 41개
 │   ├── # 핵심 엔진
 │   ├── auto-detect/          # 상황 자동 감지 + ralph-loop 라우팅
-│   ├── smart-pdca/           # 작업 크기별 PDCA 조절
-│   ├── iron-law/             # TDD + 검증 필수
+│   ├── smart-pdca/           # 작업 크기별 RPDCA 조절
+│   ├── research/             # 코드베이스 리서치 (RPDCA의 R)
+│   ├── iron-law/             # TDD + 검증 필수 + 코드 재확인
 │   ├── verification/         # 완료 전 검증 게이트
 │   ├── cto-mindset/          # CTO 마인드셋 (의견 제시)
 │   ├── session-context/      # 세션 맥락 보존 (compact 대비)
 │   ├── # 워크플로우
-│   ├── brainstorming/        # 아이디어 → 설계
-│   ├── writing-plans/        # 설계 → 구현 계획
+│   ├── brainstorming/        # 아이디어 → 설계 (research 선행 필수)
+│   ├── writing-plans/        # 설계 → 구현 계획 + plan-critic 연동
 │   ├── new-feature/          # 새 기능 오케스트레이션
 │   ├── reference-design/     # 레퍼런스 기반 UI 디자인
 │   ├── simple-tweak/         # 단순 수정 안내 (DIY 가이드)
-│   ├── systematic-debugging/ # 체계적 디버깅
+│   ├── systematic-debugging/ # 체계적 디버깅 + RPDCA 연동
 │   ├── project-kickoff/      # 프로젝트 시작 가이드
 │   ├── git-workflow/         # Git 브랜치/커밋/PR 관리
 │   ├── executing-plans/      # 서브에이전트 병렬 실행
@@ -72,8 +74,9 @@ vibecraft/
 │   ├── preset-react/         # React (Vite/CRA) 프리셋
 │   ├── preset-python/        # Python 프리셋
 │   └── preset-general/       # 범용 프리셋
-├── agents/                   # 에이전트 12개
+├── agents/                   # 에이전트 13개
 │   ├── cto-lead.md           # 팀 리드
+│   ├── plan-critic.md        # 계획서 악마의 변호인 (RPDCA)
 │   ├── code-analyzer.md      # 코드 분석
 │   ├── frontend-builder.md   # 프론트엔드 구현
 │   ├── backend-builder.md    # 백엔드 구현
@@ -118,7 +121,13 @@ vibecraft/
 │       ├── progress-tracker.js # 진행률 추적 + 디스크 보고서
 │       ├── error-recovery.js  # 실패 복구 (재시도/재할당/에스컬레이션)
 │       └── report-builder.js  # 한국어 팀 보고서 생성
-└── docs/plans/               # 설계 문서
+└── docs/plans/               # RPDCA 산출물
+    ├── {feature}/            # 진행 중인 작업 (feature별 폴더)
+    │   ├── research.md       # R 단계 산출물
+    │   ├── plan.md           # P 단계 산출물 (정본)
+    │   └── plan-review.md    # plan-critic 리뷰 기록
+    └── archive/              # 완료된 작업
+        └── YYYY-MM/{feature}/
 ```
 
 ## 구현 상태
@@ -127,6 +136,20 @@ vibecraft/
 - Phase 3 (서브에이전트 + 리뷰): 완료 - 실행/리뷰 스킬 3개, 에이전트 11개
 - Phase 4 (완성도): 완료 - 나머지 스킬 4개, 프리셋 4개, 템플릿 8개
 - Phase 5 (팀 엔진): 완료 - lib/team/ 8모듈, 훅 스크립트 2개, team-orchestration 스킬 업그레이드
+- Phase 6 (RPDCA): 완료 - PDCA→RPDCA 개편, research 스킬, plan-critic 에이전트, Codex MCP 연동
+
+## RPDCA 워크플로우
+```
+S: 바로 실행 → verification
+M: research → writing-plans → plan-critic(2회) → 사용자 확인 → executing-plans → verification
+L: research → brainstorming → writing-plans → plan-critic(3회) → 사용자 확인 → executing-plans → 리뷰 파이프라인 → verification
+```
+
+## docs/plans/ 폴더 규칙
+- feature별 폴더: `docs/plans/{feature}/` (kebab-case)
+- 파일: research.md, plan.md(정본), plan-review.md
+- 완료 → `archive/YYYY-MM/{feature}/`로 이동
+- 폐기 → 폴더 삭제 (사용자 확인 후)
 
 ## 버전 관리 규칙
 - plugin.json의 version을 변경할 때, 반드시 `node scripts/sync-version.js`를 실행하여 marketplace.json도 동기화한다.

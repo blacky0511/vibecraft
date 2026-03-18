@@ -1,6 +1,6 @@
 ---
 name: doc-writer
-description: 문서, 계획서, 보고서 작성 에이전트. PDCA 각 단계에서 호출하여 단계에 맞는 문서를 한국어로 작성한다.
+description: 문서, 계획서, 보고서 작성 에이전트. RPDCA 각 단계에서 호출하여 단계에 맞는 문서를 한국어로 작성한다.
 model: haiku
 permissionMode: acceptEdits
 ---
@@ -9,7 +9,7 @@ permissionMode: acceptEdits
 
 ## 역할
 
-PDCA 각 단계(Plan, Design, Do, Check/Analyze)에 맞는 문서를 작성한다. 간결하고 실용적인 문서를 목표로 하며, 읽는 사람이 바로 행동할 수 있도록 명확하게 작성한다.
+RPDCA 각 단계(Plan, Design, Do, Check/Analyze)에 맞는 문서를 작성한다. 간결하고 실용적인 문서를 목표로 하며, 읽는 사람이 바로 행동할 수 있도록 명확하게 작성한다.
 
 ## 호출 시점
 

@@ -28,6 +28,7 @@ description: |
 | 1 | 단순 수정 | 수치/스타일 키워드 + 1~3줄 변경 | "폰트 키워줘", "색상 바꿔" |
 | 1.5 | 레퍼런스 디자인 | UI/디자인 키워드 + 페이지/사이트 키워드 동시 감지 | "랜딩페이지 만들어줘", "이 사이트 참고해서 UI 만들어" |
 | 2 | 디버깅 | 에러/버그/실패 키워드 존재 | "에러 났어", "안 돼" |
+| 2.5 | 리서치 | 코드 조사/리서치 키워드 (코드 변경 요청 아님) | "리서치해줘", "코드 조사해줘" |
 | 3 | 분석 | 데이터 분석/조회/통계 키워드 (코드 변경 아님) | "누락률 분석해줘", "DB 데이터 뽑아줘" |
 | 4 | 코드 리뷰 | 리뷰/검토 키워드 | "리뷰해줘", "봐줘" |
 | 5 | 배포 | 배포/릴리즈 키워드 | "배포해줘", "서버에 올려" |
@@ -98,6 +99,29 @@ description: |
 
 > 우선순위 1번. 수치/스타일 키워드가 감지되면 새 기능이나 디버깅보다 먼저 이 모드를 적용한다.
 
+### 2.5. 리서치 모드
+
+**키워드**: "리서치", "리서치해줘", "조사해줘", "코드 조사", "research", "파악해줘"
+
+**조건**: 코드를 변경하는 것이 아닌, 코드베이스를 깊이 파악하려는 요청
+
+**동작**: vibecraft:research 스킬 호출
+
+> "분석해줘"는 데이터 분석(analysis-delegation)으로 라우팅.
+> "버그 원인 찾아줘"는 디버깅(systematic-debugging)으로 라우팅.
+> "이 코드 봐줘"는 코드 리뷰(code-review-request)로 라우팅.
+> 리서치 모드는 "리서치", "조사", "파악" 키워드가 명시적으로 있을 때만 적용.
+
+**트리거 배타 규칙:**
+
+| 입력 | 라우팅 | 이유 |
+|------|--------|------|
+| "리서치해줘", "코드 조사해줘" | research | 명시적 리서치 요청 |
+| "분석해줘", "데이터 분석" | analysis-delegation | 데이터/DB 분석 |
+| "버그 원인 찾아줘" | systematic-debugging | 디버깅 |
+| "이 코드 봐줘", "검토해줘" | code-review-request | 리뷰 |
+| "기능 만들어줘" | new-feature (내부에서 research 호출) | 새 기능 |
+
 ### 7. 분석 모드
 
 **키워드**: "분석", "분석해줘", "데이터 뽑아", "DB 조회", "쿼리", "로그 분석", "통계", "리포트", "패턴 분석", "추출", "집계", "현황", "트렌드", "비교해줘"
@@ -132,11 +156,12 @@ ralph-loop이 적합한지 판단한다. 완료 기준이 명확하고 반복 �
 |------|----------|---------------------|
 | 환영/인사 | welcome-guide | - |
 | 단순 수정 | simple-tweak | - |
+| 리서치 | research, smart-pdca | session-context |
 | 분석 | analysis-delegation | session-context |
 | 레퍼런스 디자인 | reference-design, smart-pdca, iron-law, verification | writing-plans, team-orchestration |
 | 새 기능 (S) | smart-pdca, iron-law, verification | impact-analysis |
-| 새 기능 (M) | smart-pdca, iron-law, brainstorming, executing-plans, team-orchestration, verification | impact-analysis, pre-flight-check, git-workflow |
-| 새 기능 (L) | smart-pdca, iron-law, brainstorming, writing-plans, team-orchestration, executing-plans, verification | impact-analysis, pre-flight-check, naming-consultant, test-strategy-advisor, git-workflow |
+| 새 기능 (M) | smart-pdca, iron-law, research, writing-plans, executing-plans, team-orchestration, verification | impact-analysis, pre-flight-check, git-workflow |
+| 새 기능 (L) | smart-pdca, iron-law, research, brainstorming, writing-plans, team-orchestration, executing-plans, verification | impact-analysis, pre-flight-check, naming-consultant, test-strategy-advisor, git-workflow |
 | 디버깅 | systematic-debugging, iron-law, verification | session-context |
 | 코드 리뷰 | code-review-request, code-review-receive | external-reviewer, consistency-enforcer |
 | 배포 | deploy-guide | rollback-strategy |

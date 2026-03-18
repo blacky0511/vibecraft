@@ -1,27 +1,44 @@
 ---
 name: smart-pdca
 description: |
-  작업 크기를 자동 판단하여 PDCA 방법론의 강도를 조절하는 스킬.
+  작업 크기를 자동 판단하여 RPDCA 방법론의 강도를 조절하는 스킬.
   S/M/L 3단계로 분류하고, 각 크기에 맞는 워크플로우를 실행한다.
 
   auto-detect 스킬이 모드를 판별한 후 이 스킬이 호출된다.
-  brainstorming, writing-plans, executing-plans 스킬과 연동하여 전체 흐름을 제어한다.
+  research, brainstorming, writing-plans, executing-plans 스킬과 연동하여 전체 흐름을 제어한다.
 
-  Triggers: 작업 시작, 기능 구현, 프로젝트 생성, PDCA, 계획, 크기 판단
+  Triggers: 작업 시작, 기능 구현, 프로젝트 생성, RPDCA, PDCA, 계획, 크기 판단
 ---
 
-# 스마트 PDCA
+# 스마트 RPDCA
 
 ## 역할
 
 사용자의 요청 내용과 현재 코드베이스를 분석하여 작업 크기를 S/M/L 중 하나로 판별하고,
-각 크기에 맞는 PDCA 강도로 워크플로우를 실행한다.
+각 크기에 맞는 RPDCA(Research-Plan-Do-Check-Act) 강도로 워크플로우를 실행한다.
+
+---
+
+## 핵심 계약: RPDCA 상태머신
+
+모든 스킬이 이 계약을 기준으로 동작한다.
+
+```
+상태: [research | plan | do | check | act]
+
+S: 바로 실행 → verification
+
+M: research → writing-plans → plan-critic(2회) → 사용자 확인 → executing-plans → verification
+   (research.md)  (plan.md)    (plan-review.md)                  (plan.md 읽음)
+
+L: research → brainstorming → writing-plans → plan-critic(3회) → 사용자 확인 → executing-plans → 리뷰 파이프라인 → verification
+```
 
 ---
 
 ## 크기 판별 기준
 
-### S (소) - 간단한 작업
+### S (소) — 간단한 작업
 
 **조건**: 파일 1~2개 수정 예상
 
@@ -34,12 +51,14 @@ description: |
 
 **워크플로우**:
 ```
-실행 → 검증(verification) → 완료
+실행 → verification → 완료
 ```
+
+R, P 단계 스킵
 
 ---
 
-### M (중) - 중간 작업
+### M (중) — 중간 작업
 
 **조건**: 파일 3~5개 수정 예상
 
@@ -51,12 +70,18 @@ description: |
 
 **워크플로우**:
 ```
-계획(간략) → 실행 → 검증(verification) → 완료
+1. research 스킬 호출 → docs/plans/{feature}/research.md 생성
+2. writing-plans 스킬 호출 → docs/plans/{feature}/plan.md 생성
+3. plan-critic 에이전트 2회 리뷰 → docs/plans/{feature}/plan-review.md 생성 + plan.md 업데이트
+4. 사용자 확인 1회 (plan-review.md 변경 요약)
+5. executing-plans → 실행
+6. error-simulation 1~2회
+7. verification
 ```
 
 ---
 
-### L (대) - 큰 작업
+### L (대) — 큰 작업
 
 **조건**: 파일 6개 이상 수정 예상 또는 새 프로젝트
 
@@ -68,7 +93,16 @@ description: |
 
 **워크플로우**:
 ```
-brainstorming → 계획 → 설계 → 팀 구성 → 서브에이전트 병렬 실행 → 리뷰 파이프라인 → 검증 → 완료
+1. research 스킬 호출 → docs/plans/{feature}/research.md 생성
+2. 사용자 확인 1회 (research Part 1 비즈니스 관점)
+3. brainstorming → 요구사항 구체화
+4. writing-plans → docs/plans/{feature}/plan.md 생성
+5. plan-critic 3회 리뷰 → plan-review.md + plan.md 업데이트
+6. 사용자 확인 1회 (plan-review.md 변경 요약)
+7. executing-plans → team-orchestration → 병렬 실행
+8. error-simulation 최대 3회
+9. 리뷰 파이프라인 (code-simplifier → external-reviewer → gap-detector)
+10. verification
 ```
 
 ---
@@ -83,89 +117,79 @@ brainstorming → 계획 → 설계 → 팀 구성 → 서브에이전트 병렬
 ```
 작업 크기 판단: M (중간)
 - 예상 수정 파일: 3~4개
-- 적용 워크플로우: 간소 PDCA (계획 → 실행 → 검증)
+- 적용 워크플로우: RPDCA 표준 (research → plan → do → check)
 ```
 
 ---
 
-## PDCA 단계별 S/M/L 행동
+## RPDCA 단계별 행동
 
-### Plan (계획) - 무엇을 만들지 정리
-
-| 크기 | 행동 |
-|------|------|
-| S | 스킵 — 바로 실행 단계로 이동 |
-| M | 간략 계획 — 수정 파일 목록과 변경 내용을 3~5줄로 요약, 사용자 확인 1회 |
-| L | 상세 계획 — `templates/plan.md` 양식으로 계획서 작성, 사용자 확인 후 진행 |
-
-**M 간략 계획 예시**:
-```
-계획 확인:
-1. LoginForm.tsx — 유효성 검증 로직 추가
-2. useAuth.ts — 에러 메시지 상태 추가
-3. auth.service.ts — 서버 에러 코드 처리
-
-이대로 진행할까요?
-```
-
----
-
-### Design (설계) - 어떻게 만들지 구조 설계
+### Research (리서치) — 코드베이스 깊이 파악
 
 | 크기 | 행동 |
 |------|------|
 | S | 스킵 |
-| M | 스킵 |
-| L | 상세 설계 — `templates/design.md` 양식으로 설계서 작성, 사용자 확인 후 진행 |
-
-**L 설계 확인 시점**: 계획 확인 이후 설계서를 작성하고, 실행 전에 1회 추가 확인을 받는다.
+| M | research 스킬 호출 → research.md 생성 (Part 1 간소, Part 2 표준) |
+| L | research 스킬 호출 → research.md 생성 (Part 1 상세, Part 2 상세) |
 
 ---
 
-### Do (실행) - 실제 코드 작성
+### Plan (계획) — 구현 계획 작성
 
 | 크기 | 행동 |
 |------|------|
-| S | 메인 에이전트가 직접 코드 작성 및 수정 |
-| M | 메인이 CTO + 서브에이전트 2~3개 병렬 (`team-orchestration` 경량 → `executing-plans`) |
-| L | CTO 팀 구성 후 다수의 서브에이전트 병렬 실행 (`team-orchestration` → `executing-plans` 스킬 호출) |
+| S | 스킵 |
+| M | writing-plans → plan.md 생성 → plan-critic 2회 리뷰 |
+| L | brainstorming → writing-plans → plan.md → plan-critic 3회 리뷰 |
+
+**정본 규칙**: plan.md 1개가 정본이다. 리뷰 반영 시 plan.md를 직접 업데이트한다. plan-final.md는 만들지 않는다.
 
 ---
 
-### Do → Check 사이: 오류 시뮬레이션 (`error-simulation`)
+### Do (실행) — 코드 작성
+
+| 크기 | 행동 |
+|------|------|
+| S | 메인 에이전트 직접 실행 |
+| M | team-orchestration 경량 → 서브에이전트 2~3개 병렬 |
+| L | team-orchestration 정규 → CTO 팀 구성 후 다수 서브에이전트 병렬 실행 |
+
+---
+
+### Do → Check 사이: 오류 시뮬레이션 (error-simulation)
 
 실행 완료 후, 검증 전에 수정된 코드의 잠재 오류를 시뮬레이션한다.
 발견된 문제를 수정하고, 새 문제가 없을 때까지 반복한다.
 
 | 크기 | 시뮬레이션 |
 |------|-----------|
-| S | **스킵** — 단순 수정에 시뮬레이션은 낭비 |
-| M | **1~2회** — 파일 간 연결 오류, 엣지 케이스 점검 |
-| L | **최대 3회** — 엣지 케이스 + 호환성 + 안정성 전체 점검 |
+| S | 스킵 — 단순 수정에 시뮬레이션은 낭비 |
+| M | 1~2회 — 파일 간 연결 오류, 엣지 케이스 점검 |
+| L | 최대 3회 — 엣지 케이스 + 호환성 + 안정성 전체 점검 |
 
 조기 통과: 시뮬레이션에서 새로운 문제가 발견되지 않으면 즉시 통과.
 
 ---
 
-### Check (검증) - 설계 대비 달성률 확인
+### Check (검증) — 설계 대비 달성률 확인
 
 | 크기 | 행동 |
 |------|------|
-| S | 테스트 실행 + 동작 확인만 (`verification` 스킬 호출) |
-| M | `code-simplifier` 단독 실행 → 테스트 통과 + 간략 검증 보고 (`verification` 스킬 호출) |
-| L | 전체 리뷰 파이프라인 실행 (code-simplifier → external-reviewer → gap-detector) |
+| S | verification 스킬 호출 |
+| M | code-simplifier + verification 스킬 호출 |
+| L | 리뷰 파이프라인 전체 실행 (code-simplifier → external-reviewer → gap-detector) |
 
 ---
 
-### Act (개선) - 미달 사항 수정
+### Act (개선) — 미달 사항 수정
+
+달성률 90% 미만이면 완료를 선언하지 않고 Act 단계로 재진입한다.
 
 | 크기 | 행동 |
 |------|------|
 | S | 즉시 수정 후 재검증 |
 | M | 미달 항목 목록화 → 수정 → 재검증 |
 | L | 재계획 후 수정 → 리뷰 파이프라인 재실행 → 재검증 |
-
-**공통 기준**: 달성률 90% 미만이면 완료를 선언하지 않고 Act 단계로 재진입한다.
 
 ---
 
@@ -174,8 +198,43 @@ brainstorming → 계획 → 설계 → 팀 구성 → 서브에이전트 병렬
 | 크기 | 확인 횟수 | 확인 시점 |
 |------|----------|----------|
 | S | 0회 | 확인 없이 바로 진행, 완료 시 결과만 보고 |
-| M | 1회 | 간략 계획 작성 후 → 실행 전 1회 확인 |
-| L | 2회 | 계획서 확인 1회 + 설계서 확인 1회 → 그 이후 쭉 진행 → 리뷰 결과 + 완료 보고 |
+| M | 1회 | plan-review.md 변경 요약 확인 후 → 실행 전 |
+| L | 2회 | research Part 1 비즈니스 관점 확인 1회 + plan-review.md 변경 요약 확인 1회 |
+
+---
+
+## 문서 수명 관리
+
+이 스킬이 산출물 문서의 생성, 아카이브, 폐기를 담당한다.
+
+### 폴더 구조
+
+```
+docs/plans/{feature}/                      ← 진행 중
+docs/plans/archive/YYYY-MM/{feature}/      ← 완료 (아카이브)
+```
+
+### 규칙
+
+- feature 폴더명: kebab-case
+- 생성 파일: research.md, plan.md, plan-review.md
+- plan-final.md는 만들지 않는다. plan.md 1개가 정본이다.
+- 리뷰 결과는 plan-review.md에 기록하고, 확정 내용은 plan.md에 반영한다.
+
+### 작업 완료 시
+
+```
+"작업이 완료되었습니다. 산출물을 아카이브할까요?"
+→ 승인 시: docs/plans/{feature}/ → docs/plans/archive/YYYY-MM/{feature}/ 로 이동
+```
+
+### 작업 폐기 시
+
+```
+"이 작업을 취소하시겠습니까?
+docs/plans/{feature}/ 폴더의 파일 N개가 삭제됩니다."
+→ 승인 시: 폴더 전체 삭제
+```
 
 ---
 
@@ -185,25 +244,31 @@ brainstorming → 계획 → 설계 → 팀 구성 → 서브에이전트 병렬
 auto-detect
     │
     ▼
-smart-pdca (현재 스킬: 크기 판별)
+smart-pdca (크기 판별 + RPDCA 제어)
     │
     ├── S → 바로 실행 → verification
     │
-    ├── M → 계획(간략) → team-orchestration(경량) → executing-plans → code-simplifier → error-simulation(1~2회) → verification
+    ├── M → research → writing-plans → plan-critic(2회)
+    │       → 사용자 확인 → executing-plans
+    │       → error-simulation(1~2회) → verification
     │
-    └── L → brainstorming → writing-plans → team-orchestration
-                → executing-plans → error-simulation(최대 3회) → review-pipeline → verification
+    └── L → research → brainstorming → writing-plans
+            → plan-critic(3회) → 사용자 확인
+            → team-orchestration → executing-plans
+            → error-simulation(최대 3회) → review-pipeline → verification
 ```
 
 ### 각 연동 스킬 역할
 
 | 스킬 | 호출 조건 | 역할 |
 |------|----------|------|
-| `brainstorming` | L만 | 아이디어 구체화 — 질문을 통해 요구사항 확정 |
-| `writing-plans` | L만 | 확정된 설계를 단계별 구현 계획으로 문서화 |
+| `research` | M, L | 코드베이스 깊이 읽기 → research.md 생성 |
+| `brainstorming` | L만 | 요구사항 구체화 (research.md 기반) |
+| `writing-plans` | M, L | plan.md 생성 |
+| `plan-critic` (에이전트) | M, L | plan.md 리뷰 → plan-review.md 생성 + plan.md 업데이트 |
 | `executing-plans` | M, L | 서브에이전트 디스패치 및 병렬 실행 관리 |
-| `team-orchestration` | M(경량), L(정규) | CTO 팀 구성 — M은 메인이 CTO, L은 전용 에이전트 |
-| `error-simulation` | M, L | 실행 후 잠재 오류 시뮬레이션 (S는 스킵) |
+| `team-orchestration` | M(경량), L(정규) | 팀 구성 — M은 메인이 CTO, L은 전용 에이전트 |
+| `error-simulation` | M, L | 실행 후 잠재 오류 시뮬레이션 |
 | `verification` | S, M, L | 완료 전 필수 검증 게이트 |
 
 ---

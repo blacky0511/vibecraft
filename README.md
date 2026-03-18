@@ -225,7 +225,7 @@ L 사이즈 작업에서 Claude Code 네이티브 API 위에 지능 계층을 �
 
 ```
 /vibecraft       → 플러그인 상태 + 도움말
-/vibecraft pdca  → 현재 PDCA 진행 상황
+/vibecraft pdca  → 현재 RPDCA 진행 상황
 /vibecraft debug → 디버깅 모드 시작
 /vibecraft review → 코드 리뷰 시작
 ```

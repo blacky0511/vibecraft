@@ -23,13 +23,17 @@ description: |
 
 실행 시작 전, 아래 항목을 반드시 확인한다.
 
-- 계획서 경로: `docs/plans/YYYY-MM-DD-<기능명>.md`
+- 계획서 경로: `docs/plans/{feature}/plan.md`
 - 계획서가 없으면 → `writing-plans` 스킬을 먼저 실행할 것을 안내한다.
 - 계획서가 있으면 → 태스크 목록을 파싱하고 규모를 판단한다.
 
-**승인 검증**: 사용자가 계획서를 승인했는지 확인한다.
-writing-plans의 주석 리뷰 사이클을 거치지 않고 바로 실행을 요청한 경우,
-"계획서를 먼저 검토하시겠습니까?"라고 한 번 확인한다.
+**RPDCA 검증**: 아래 파일이 모두 존재하는지 확인한다.
+- `docs/plans/{feature}/plan.md` — 정본 계획서 (필수)
+- `docs/plans/{feature}/plan-review.md` — plan-critic 리뷰 완료 증거 (M/L 필수)
+- `docs/plans/{feature}/research.md` — 리서치 완료 증거 (M/L 필수)
+
+S 크기는 위 파일 없이도 실행 가능.
+M/L에서 plan-review.md가 없으면 → "plan-critic 리뷰를 먼저 실행하시겠습니까?"로 안내.
 
 ### 2. 규모 판단 기준
 
@@ -198,7 +202,7 @@ code-simplifier → external-reviewer → gap-detector
 ```
 ## 구현 완료 보고
 
-**계획서**: docs/plans/YYYY-MM-DD-<기능명>.md
+**계획서**: docs/plans/{feature}/plan.md
 **실행 방식**: S / M / L
 **완료된 Step**: N개 / 전체 N개
 
@@ -247,7 +251,10 @@ code-simplifier → external-reviewer → gap-detector
 ## 연동 흐름
 
 ```
-writing-plans (계획서 생성 + 주석 리뷰 사이클)
+research (코드베이스 파악)
+    │
+    ▼
+writing-plans (계획서 생성) + plan-critic (리뷰)
     │
     ▼
 executing-plans (현재 스킬: 계획 실행)
