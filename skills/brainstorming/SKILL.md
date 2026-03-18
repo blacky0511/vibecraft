@@ -237,23 +237,26 @@ research.md가 없습니다.
 
 ## 5단계: 설계 문서 저장
 
-모든 섹션이 확정되면 `docs/plans/` 디렉토리에 설계 문서를 저장한다.
+모든 섹션이 확정되면 RPDCA 표준 폴더에 설계 문서를 저장한다.
 
-### 파일명 형식
+### 저장 경로
 
 ```
-docs/plans/YYYY-MM-DD-{기능명 또는 프로젝트명}-design.md
+docs/plans/{feature}/design.md
 ```
 
-예시: `docs/plans/2026-02-27-todo-app-design.md`
+예시: `docs/plans/todo-app/design.md`
+
+> **주의**: `docs/plans/` 루트에 저장하지 않는다. 반드시 feature 폴더 안에 저장한다.
+> 같은 폴더에 research.md, plan.md, plan-review.md가 함께 위치한다.
 
 ### 저장 완료 후 알림
 
 ```
 설계 문서를 저장했습니다.
-경로: docs/plans/2026-02-27-todo-app-design.md
+경로: docs/plans/{feature}/design.md
 
-이제 writing-plans 스킬로 넘어가서 단계별 구현 계획을 작성하겠습니다.
+이제 vibecraft:writing-plans 스킬을 호출하여 단계별 구현 계획을 작성하겠습니다.
 ```
 
 ---

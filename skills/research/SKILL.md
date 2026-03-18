@@ -127,7 +127,7 @@ brainstorming에서 분리된 독립 스킬로, RPDCA의 R(Research) 단계를 �
 - 기존 패턴: (핵심 요약)
 - 결정 필요 사항 N개
 
-이제 구현 계획을 작성하겠습니다.
+다음 단계: vibecraft:writing-plans 스킬을 호출하여 구현 계획을 작성합니다.
 ```
 
 ### L 크기
@@ -137,6 +137,8 @@ brainstorming에서 분리된 독립 스킬로, RPDCA의 R(Research) 단계를 �
 
 Part 1 (비즈니스 관점)을 확인해 주세요.
 특히 "결정이 필요한 것" 섹션에 답변을 주시면 설계에 반영하겠습니다.
+
+다음 단계: 확인 후 vibecraft:brainstorming 스킬을 호출하여 요구사항을 구체화합니다.
 ```
 
 ---
