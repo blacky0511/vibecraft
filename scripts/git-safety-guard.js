@@ -68,6 +68,32 @@ try {
       pattern: /rm\s+-rf\s/,
       warning: '재귀적 강제 삭제는 되돌릴 수 없습니다.',
       block: true
+    },
+    // 범용 파괴 명령어 (git 외)
+    {
+      pattern: /DROP\s+(TABLE|DATABASE)/i,
+      warning: 'DROP TABLE/DATABASE는 데이터를 영구적으로 삭제합니다.',
+      block: true
+    },
+    {
+      pattern: /TRUNCATE\s+TABLE/i,
+      warning: 'TRUNCATE TABLE은 테이블의 모든 데이터를 삭제합니다.',
+      block: true
+    },
+    {
+      pattern: /terraform\s+destroy/,
+      warning: 'terraform destroy는 인프라를 전부 삭제합니다.',
+      block: true
+    },
+    {
+      pattern: /kubectl\s+delete\s+namespace/,
+      warning: 'namespace 삭제는 해당 네임스페이스의 모든 리소스를 삭제합니다.',
+      block: true
+    },
+    {
+      pattern: /dd\s+if=/,
+      warning: 'dd 명령은 디스크를 직접 덮어씁니다. 데이터 유실 위험이 있습니다.',
+      block: true
     }
   ];
 

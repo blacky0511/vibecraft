@@ -1,6 +1,6 @@
 {
   "name": "vibecraft",
-  "version": "1.9.5",
+  "version": "1.9.6",
   "description": "바이브코딩 키트 - AI가 상황을 자동 감지하고 적절한 워크플로우를 안내하는 한국어 전용 플러그인. CTO 마인드셋 + RPDCA 방법론 + Plan Critic(opus 반복 수정) + Check-Act 자동 루프 + CTO 팀 엔진 + 리서치 산출물 + 주석 리뷰 사이클 + 레퍼런스 기반 UI 디자인 + 41개 스마트 스킬.",
   "author": {
     "name": "앤기브마케팅"
