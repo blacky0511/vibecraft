@@ -38,7 +38,7 @@ description: |
 **복수 매칭 판별 규칙:**
 
 1. **인사 + 작업**: 작업 모드 우선 ("안녕 로그인 만들어줘" → 새 기능)
-2. **새 기능 vs 프로젝트 시작**: 현재 프로젝트에 코드 파일이 이미 있으면 "새 기능", 비어있거나 없으면 "프로젝트 시작"
+2. **새 기능 vs 프로젝트 시작**: 입력의 의도를 우선 판단한다. "~만들자/시작하자"(청유형)는 프로젝트 시작, "~추가해줘/구현해줘"(요청형)는 새 기능. **단, 요청형이라도 현재 프로젝트가 비어있으면(코드 파일 없음) 프로젝트 시작으로 전환한다.** 애매하면 선택지를 제시한다.
 3. **디버깅 + 기능 요청**: 디버깅 우선 ("로그인 에러 고쳐줘" → 디버깅)
 4. **판별 불가**: 사용자에게 선택지 제시
 
@@ -192,7 +192,7 @@ ralph-loop은 독립 모드가 아니라, 기존 모드(새 기능/디버깅 등
 | 코드 리뷰 | code-review-request, code-review-receive | external-reviewer, consistency-enforcer |
 | 배포 | deploy-guide | rollback-strategy |
 | ralph-loop (모든 모드에서 활성화 가능) | team-orchestration, verification | smart-pdca, iron-law |
-| 프로젝트 시작 | project-kickoff, brainstorming, writing-plans | dependency-auditor |
+| 프로젝트 시작 | project-kickoff, brainstorming, smart-pdca, iron-law, writing-plans, executing-plans, verification | dependency-auditor, naming-consultant, git-workflow |
 
 **항상 활성화 (모든 모드 공통)**: cto-mindset, session-context
 

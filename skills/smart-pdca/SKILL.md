@@ -75,13 +75,13 @@ R, P 단계 스킵
 
 **워크플로우**:
 ```
-1. research 스킬 호출 → docs/plans/{feature}/research.md 생성
-2. writing-plans 스킬 호출 → docs/plans/{feature}/plan.md 생성
-3. plan-critic 에이전트 2회 리뷰 → docs/plans/{feature}/plan-review.md 생성 + plan.md 업데이트
+1. research 스킬 호출 (sonnet) → docs/plans/{feature}/research.md 생성
+2. writing-plans 스킬 호출 (opus) → docs/plans/{feature}/plan.md 생성
+3. plan-critic 에이전트 2라운드 반복 수정 리뷰 (opus) → plan-review.md + plan.md 업데이트
 4. 사용자 확인 1회 (plan-review.md 변경 요약)
-5. executing-plans → 실행
-6. error-simulation 1~2회
-7. verification
+5. executing-plans → 실행 (sonnet)
+6. code-simplifier → error-simulation 1~2회
+7. verification (gap-detector(opus) + Check-Act 자동 루프, 최대 2회)
 ```
 
 ---
@@ -102,12 +102,32 @@ R, P 단계 스킵
 2. 사용자 확인 1회 (research Part 1 비즈니스 관점)
 3. brainstorming → 요구사항 구체화
 4. writing-plans → docs/plans/{feature}/plan.md 생성
-5. plan-critic 3회 리뷰 → plan-review.md + plan.md 업데이트
+5. plan-critic 3라운드 반복 수정 리뷰 → plan-review.md + plan.md 업데이트
 6. 사용자 확인 1회 (plan-review.md 변경 요약)
 7. executing-plans → team-orchestration → 병렬 실행
-8. error-simulation 최대 3회
-9. 리뷰 파이프라인 (code-simplifier → external-reviewer → gap-detector)
-10. verification
+8. code-simplifier → external-reviewer → error-simulation 최대 3회
+9. verification (gap-detector(opus) + Check-Act 자동 루프, 최대 3회)
+```
+
+---
+
+## project-kickoff 합류 규칙
+
+project-kickoff(1~4단계) 완료 후 smart-pdca에 합류할 때:
+
+- **크기**: 항상 L (새 프로젝트는 전체 구현)
+- **Research**: 스킵 (코드가 없으므로)
+- **Brainstorming**: 스킵 (project-kickoff 1단계에서 이미 수행)
+- **이후 흐름**: L 워크플로우의 4번(writing-plans)부터 시작
+
+```
+project-kickoff 합류 시 L 워크플로우:
+4. writing-plans(opus) → docs/plans/{feature}/plan.md 생성
+5. plan-critic 3라운드 반복 수정 리뷰
+6. 사용자 확인 1회
+7. executing-plans → team-orchestration → 병렬 실행
+8. code-simplifier → external-reviewer → error-simulation
+9. verification (gap-detector(opus) + Check-Act 루프, 최대 3회)
 ```
 
 ---
@@ -144,8 +164,12 @@ R, P 단계 스킵
 | 크기 | 행동 |
 |------|------|
 | S | 스킵 |
-| M | writing-plans → plan.md 생성 → plan-critic 2회 리뷰 |
-| L | brainstorming → writing-plans → plan.md → plan-critic 3회 리뷰 |
+| M | writing-plans (opus) → plan.md 생성 → plan-critic 2라운드 반복 수정 |
+| L | brainstorming → writing-plans (opus) → plan.md → plan-critic 3라운드 반복 수정 |
+
+**plan 초안은 opus로 작성한다.** 초안 품질이 높으면 리뷰 라운드에서 잡아야 할 것이 줄어든다.
+
+**반복 수정 사이클**: 각 라운드가 이전 라운드의 수정본을 기반으로 리뷰하며, 초안 원본을 항상 참조한다.
 
 **정본 규칙**: plan.md 1개가 정본이다. 리뷰 반영 시 plan.md를 직접 업데이트한다. plan-final.md는 만들지 않는다.
 
@@ -177,25 +201,83 @@ R, P 단계 스킵
 
 ---
 
-### Check (검증) — 설계 대비 달성률 확인
+### Check (검증) — plan 대비 달성률 확인
 
 | 크기 | 행동 |
 |------|------|
-| S | verification 스킬 호출 |
-| M | code-simplifier + verification 스킬 호출 |
-| L | 리뷰 파이프라인 전체 실행 (code-simplifier → external-reviewer → gap-detector) |
+| S | verification 스킬 호출 (증거 기반 검증) |
+| M | **gap-detector** (plan.md vs 코드 비교 → Match Rate 계산) |
+| L | **gap-detector** (plan.md vs 코드 비교 → Match Rate 계산) |
+
+**M/L 크기**: gap-detector가 plan.md의 각 Step을 검증 항목으로 삼아 Match Rate를 계산한다.
 
 ---
 
-### Act (개선) — 미달 사항 수정
+### Check-Act 자동 루프 (M/L)
 
-달성률 90% 미만이면 완료를 선언하지 않고 Act 단계로 재진입한다.
+Do 완료 후 gap-detector → 자동 수정 → 재검증을 **자동으로** 반복한다.
+사용자가 "실행해"라고 한 뒤에는 DCA 전체가 자동으로 돌아간다.
+
+```
+Do 완료
+   ↓
+gap-detector: plan.md vs 실제 코드 → Match Rate 계산
+   ↓
+90% 이상? ──→ YES ──→ 완료 보고
+   ↓ NO
+Gap 목록 생성 (Missing / Changed, 우선순위별 정렬)
+   ↓
+서브에이전트가 Gap 목록 기반으로 코드 수정
+   ↓
+gap-detector 재실행 → Match Rate 재계산
+   ↓
+종료 조건 충족? → YES → 완료 보고
+   ↓ NO
+다음 반복...
+```
+
+#### 종료 조건 (3개 중 하나)
+
+| 조건 | 설명 |
+|------|------|
+| Match Rate >= 90% | 목표 달성 — 통과 |
+| 최대 반복 도달 | M: 2회, L: 3회 |
+| 개선 없음 | 이전 회차 대비 Match Rate 향상 없음 → 사용자에게 보고 |
+
+#### 크기별 최대 반복 횟수
+
+| 크기 | 최대 반복 | 이유 |
+|------|----------|------|
+| S | 없음 | gap-detector 사용 안 함 |
+| M | 2회 | 파일 3~5개 수정, 2회면 대부분 해결 |
+| L | 3회 | 파일 6개+, 복잡도가 높아 3회까지 허용 |
+
+#### 개선 없음 시 사용자 보고
+
+```
+Match Rate가 개선되지 않습니다 (현재: 78%).
+
+남은 Gap:
+- Step 3: 인증 미들웨어 — 구조적 문제로 자동 수정 불가
+- Step 7: DB 마이그레이션 — 스키마 결정 필요
+
+수동으로 확인이 필요합니다. 어떻게 할까요?
+1. 남은 Gap을 직접 수정합니다
+2. 현재 상태로 완료 처리합니다 (78%)
+3. plan.md를 수정하고 다시 실행합니다
+```
+
+---
+
+### Act (개선) — 미달 사항 자동 수정
+
+달성률 90% 미만이면 gap-detector의 Gap 목록을 기반으로 자동 수정한다.
 
 | 크기 | 행동 |
 |------|------|
-| S | 즉시 수정 후 재검증 |
-| M | 미달 항목 목록화 → 수정 → 재검증 |
-| L | 재계획 후 수정 → 리뷰 파이프라인 재실행 → 재검증 |
+| S | 즉시 수정 후 verification 재실행 |
+| M | Gap 목록 → 서브에이전트 수정 → gap-detector 재실행 (최대 2회) |
+| L | Gap 목록 → 서브에이전트 수정 → gap-detector 재실행 (최대 3회) |
 
 ---
 
@@ -300,6 +382,8 @@ docs/plans/{feature}/ 폴더의 파일 N개가 삭제됩니다."
 
 ## 연동 스킬 흐름
 
+### 새 기능 / 프로젝트
+
 ```
 auto-detect
     │
@@ -308,14 +392,36 @@ smart-pdca (크기 판별 + RPDCA 제어)
     │
     ├── S → 바로 실행 → verification
     │
-    ├── M → research → writing-plans → plan-critic(2회)
-    │       → 사용자 확인 → executing-plans
-    │       → error-simulation(1~2회) → verification
+    ├── M → research(sonnet) → writing-plans(opus) → plan-critic(opus, 2라운드 반복 수정)
+    │       → 사용자 확인 → executing-plans(sonnet)
+    │       → code-simplifier → error-simulation
+    │       → verification(gap-detector(opus) + Check-Act 루프, 최대 2회)
     │
-    └── L → research → brainstorming → writing-plans
-            → plan-critic(3회) → 사용자 확인
-            → team-orchestration → executing-plans
-            → error-simulation(최대 3회) → review-pipeline → verification
+    └── L → research(sonnet) → brainstorming → writing-plans(opus)
+            → plan-critic(opus, 3라운드 반복 수정) → 사용자 확인
+            → team-orchestration → executing-plans(sonnet)
+            → code-simplifier → external-reviewer → error-simulation
+            → verification(gap-detector(opus) + Check-Act 루프, 최대 3회)
+```
+
+### 디버깅
+
+디버깅 모드에서는 systematic-debugging 스킬의 RPDCA 매핑을 따른다.
+smart-pdca는 크기 판별만 수행하고, 이후 흐름은 systematic-debugging이 제어한다.
+
+```
+auto-detect → systematic-debugging
+    │
+    ├── S → Phase 1(1→2간소화→3→게이트) → Phase 2(4→5) → verification(체크리스트)
+    │
+    ├── M → research(sonnet) → Phase 1(opus, 1→2→3→게이트)
+    │       → Phase 1.5(fix-plan+영향분석) → Phase 2(4→5→6 영향 대조)
+    │       → verification(체크리스트+영향 대조)
+    │
+    └── L → research(sonnet) → Phase 1(opus, 1→2→3→게이트)
+            → Phase 1.5(fix-plan+영향분석, 🔴시 사용자 확인)
+            → Phase 2(4→5→6 영향 대조) → error-simulation
+            → verification(체크리스트+영향 대조) + 회귀 테스트
 ```
 
 ### 각 연동 스킬 역할
@@ -325,10 +431,11 @@ smart-pdca (크기 판별 + RPDCA 제어)
 | `research` | M, L | 코드베이스 깊이 읽기 → research.md 생성 |
 | `brainstorming` | L만 | 요구사항 구체화 (research.md 기반) |
 | `writing-plans` | M, L | plan.md 생성 |
-| `plan-critic` (에이전트) | M, L | plan.md 리뷰 → plan-review.md 생성 + plan.md 업데이트 |
+| `plan-critic` (에이전트) | M, L | plan.md 반복 수정 리뷰 (M: 2라운드, L: 3라운드, 전 라운드 opus) |
 | `executing-plans` | M, L | 서브에이전트 디스패치 및 병렬 실행 관리 |
 | `team-orchestration` | M(경량), L(정규) | 팀 구성 — M은 메인이 CTO, L은 전용 에이전트 |
 | `error-simulation` | M, L | 실행 후 잠재 오류 시뮬레이션 |
+| `gap-detector` (에이전트) | M, L | plan.md 대비 Match Rate 계산 → 90% 미만 시 자동 수정 루프 |
 | `verification` | S, M, L | 완료 전 필수 검증 게이트 |
 
 ---

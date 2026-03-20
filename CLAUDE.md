@@ -137,13 +137,34 @@ vibecraft/
 - Phase 4 (완성도): 완료 - 나머지 스킬 4개, 프리셋 4개, 템플릿 8개
 - Phase 5 (팀 엔진): 완료 - lib/team/ 8모듈, 훅 스크립트 2개, team-orchestration 스킬 업그레이드
 - Phase 6 (RPDCA): 완료 - PDCA→RPDCA 개편, research 스킬, plan-critic 에이전트, Codex MCP 연동
+- Phase 7 (Plan 품질 + Check-Act + 디버깅 강화 + kickoff 통합): 완료 - plan-critic opus 반복 수정, plan 초안 opus, gap-detector Match Rate, Check-Act 자동 루프, 디버깅 mini fix-plan + 영향 분석 + debugger opus, project-kickoff → RPDCA 합류
 
 ## RPDCA 워크플로우
 ```
 S: 바로 실행 → verification
-M: research → writing-plans → plan-critic(2회) → 사용자 확인 → executing-plans → verification
-L: research → brainstorming → writing-plans → plan-critic(3회) → 사용자 확인 → executing-plans → 리뷰 파이프라인 → verification
+M: research(sonnet) → writing-plans(opus) → plan-critic(opus, 2라운드 반복 수정) → 사용자 확인
+   → executing-plans(sonnet) → code-simplifier → error-simulation
+   → verification(내부에서 gap-detector(opus) + Check-Act 자동 루프, 최대 2회)
+L: research(sonnet) → brainstorming → writing-plans(opus) → plan-critic(opus, 3라운드 반복 수정) → 사용자 확인
+   → executing-plans(sonnet) → code-simplifier → external-reviewer → error-simulation
+   → verification(내부에서 gap-detector(opus) + Check-Act 자동 루프, 최대 3회)
 ```
+
+### 단계별 모델 배정
+| 단계 | 모델 | 이유 |
+|------|------|------|
+| Research | sonnet | 코드 탐색/수집 — 속도 중시 |
+| Plan 초안 | opus | 설계 품질 — 깊이 중시 |
+| Plan 리뷰 (plan-critic) | opus | 비판적 사고 — 깊이 중시 |
+| Do (코드 작성) | sonnet | 정확한 실행 — 속도 중시 |
+| Check (gap-detector) | opus | plan 대비 정확한 판단 필요 |
+
+### Check-Act 자동 루프
+- Do 완료 후 gap-detector가 plan.md vs 코드 비교 → Match Rate 계산
+- 90% 이상: 통과 → 완료 보고
+- 90% 미만: Gap 목록 기반 자동 수정 → 재검증 반복
+- 종료 조건: 90% 달성 / 최대 반복(M:2, L:3) / 개선 없음
+- 사용자 개입: R 확인 + P 확인 2번만. "실행해" 이후 DCA는 자동
 
 ## docs/plans/ 폴더 규칙
 - feature별 폴더: `docs/plans/{feature}/` (kebab-case)

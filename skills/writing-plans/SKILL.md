@@ -35,16 +35,19 @@ doc-writer 서브에이전트에 위임하여 메인 컨텍스트를 보존한�
    - 작업 크기 (S/M/L)
    - 특수 지시 (사용자가 강조한 사항, 제외 범위 등)
 
-2. **doc-writer 서브에이전트 스폰**:
+2. **doc-writer 서브에이전트 스폰 (opus)**:
 
    ```
    Agent({
      subagent_type: "vibecraft:doc-writer",
      prompt: <지시서>,
+     model: "opus",
      run_in_background: true,
      isolation: "worktree"
    })
    ```
+
+   **plan.md 작성은 반드시 opus로 실행한다.** 초안 품질이 높으면 plan-critic 리뷰에서 잡아야 할 것이 줄어들어 전체 계획 품질이 올라간다.
 
 3. **결과 수신** (메인에 들어오는 것):
    - plan.md 저장 경로
@@ -108,8 +111,8 @@ doc-writer에 전달하는 프롬프트:
 | 크기 | plan 작성 방식 |
 |------|--------------|
 | S | 메인에서 직접 (기존과 동일) |
-| M | doc-writer 서브에이전트 위임 |
-| L | doc-writer 서브에이전트 위임 |
+| M | doc-writer 서브에이전트 위임 (opus) |
+| L | doc-writer 서브에이전트 위임 (opus) |
 
 ---
 
@@ -123,7 +126,8 @@ plan.md를 작성하기 전에, 반드시 아래를 확인한다.
 
 - **있음** → 정상 진행. research.md의 Part 2(기술 관점)를 기반으로 plan.md를 작성한다.
 - **없음 + S 크기** → 정상. S 크기는 research가 필요 없으므로 바로 plan을 작성한다.
-- **없음 + M/L 크기** → **차단**. 아래 안내를 출력하고 plan 작성에 들어가지 않는다.
+- **없음 + project-kickoff 경유** → **정상**. 새 프로젝트는 코드가 없으므로 research 불필요. brainstorming의 설계 문서(design.md)를 기반으로 plan.md를 작성한다.
+- **없음 + M/L 크기 (기존 프로젝트)** → **차단**. 아래 안내를 출력하고 plan 작성에 들어가지 않는다.
 
 ```
 research.md가 없습니다.
@@ -275,9 +279,11 @@ UI 컴포넌트, 설정 파일 등 자동화 테스트 작성이 어려운 경�
 ```
 계획 초안 작성 → docs/plans/{feature}/plan.md 저장
     ↓
-plan-critic 에이전트 자동 호출
+plan-critic 에이전트 자동 호출 (전 라운드 opus)
     ↓
-plan-review.md 생성 + plan.md 자동 업데이트
+반복 수정 사이클: 각 라운드가 수정본 기반 리뷰 + 초안 참조
+    ↓
+plan-review.md 생성 + plan.md 업데이트 완료
     ↓
 사용자에게 변경 요약만 제시
     ↓

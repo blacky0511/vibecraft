@@ -136,7 +136,7 @@ JWT 기반 로그인 API 엔드포인트를 구현한다.
 1. `team-orchestration` 스킬을 **light 모드**로 호출한다.
 2. 계획서의 Step을 분석하여 에이전트 2~3명을 매칭한다.
 3. TeamCreate → TaskCreate → 프롬프트 정제 → 에이전트 스폰 (worktree, background)
-4. 모든 에이전트 완료 후 → code-simplifier → error-simulation → verification
+4. 모든 에이전트 완료 후 → code-simplifier → error-simulation → verification(gap-detector + Check-Act 루프)
 5. 실패 시 retry 1회 → 에스컬레이션 (reassign 생략)
 
 **서브에이전트 프롬프트 생성:**
@@ -208,19 +208,30 @@ git worktree remove .claude/worktrees/{브랜치명}
 
 ## 리뷰 파이프라인
 
-모든 태스크 완료 후, 아래 파이프라인을 순서대로 실행한다.
+### 크기별 적용
+
+| 크기 | 파이프라인 |
+|------|----------|
+| S | 리뷰 파이프라인 없음 — 바로 verification |
+| M | code-simplifier → error-simulation → **verification (내부에서 gap-detector 호출)** |
+| L | code-simplifier → external-reviewer → error-simulation → **verification (내부에서 gap-detector 호출)** |
+
+> **gap-detector는 verification 내부에서 호출된다.** 리뷰 파이프라인에서 별도로 호출하지 않는다. verification이 gap-detector를 호출하여 Match Rate를 계산하고, 90% 미만 시 자동 수정 루프를 실행한다.
+
+### L 크기 전체 파이프라인
 
 ```
-code-simplifier → external-reviewer → gap-detector
+code-simplifier → external-reviewer → error-simulation → verification(gap-detector + Check-Act 루프)
 ```
 
-| 단계 | 담당 에이전트/스킬 | 역할 |
-|------|-------------------|------|
-| 1단계 | `code-simplifier` | 구현 코드를 단순화 · 가독성 개선 |
-| 2단계 | `external-reviewer` | 외부 도구(ESLint, Codex 등)로 코드 검사 |
-| 3단계 | `gap-detector` | 계획서 대비 누락/불일치 항목 탐지 |
+| 단계 | 담당 | 역할 |
+|------|------|------|
+| 1단계 | `code-simplifier` | 구현 코드 단순화 · 가독성 개선 |
+| 2단계 (L만) | `external-reviewer` | 외부 도구(ESLint 등)로 코드 검사 |
+| 3단계 | `error-simulation` | 잠재 오류 시뮬레이션 (M: 1~2회, L: 최대 3회) |
+| 4단계 | `verification` | gap-detector(Match Rate) + Check-Act 자동 루프 |
 
-리뷰 결과에 지적 사항이 있으면 → 해당 Step을 수정하고 파이프라인을 재실행한다.
+리뷰 결과에 지적 사항이 있으면 → 해당 Step을 수정하고 재실행한다.
 
 ---
 
@@ -294,7 +305,7 @@ executing-plans (현재 스킬: 계획 실행)
     │         │
     │         ▼
     │    리뷰 파이프라인
-    │    (code-simplifier → external-reviewer → gap-detector)
+    │    (code-simplifier → external-reviewer → error-simulation → verification(gap-detector))
     │
     └── ralph-loop → team-orchestration (ralph-loop 모드) → iteration 루프
               │

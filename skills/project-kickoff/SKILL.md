@@ -64,12 +64,14 @@ brainstorming 스킬을 호출하여 아이디어를 구체화한다.
 ### 공통 설정 (모든 프로젝트)
 
 ```
-1. 폴더 생성 및 이동
+1. 프로젝트 폴더 생성 및 이동
 2. Git 저장소 초기화 (git init)
 3. .gitignore 파일 생성
 4. CLAUDE.md 생성 (프로젝트별 규칙 문서)
 5. README.md 초안 생성
 ```
+
+> **현재 디렉토리에 기존 코드가 있는 경우**: 반드시 새 폴더를 만들어서 이동한 뒤 진행한다. 기존 프로젝트 안에 새 프로젝트를 만들지 않는다. "프로젝트명으로 새 폴더를 만들겠습니다. 위치는 현재 폴더와 같은 레벨(형제 폴더)입니다."라고 안내한다.
 
 ### 기술 스택별 추가 설정
 
@@ -136,19 +138,31 @@ python -m venv venv
 
 ---
 
-## 5단계: 기능별 구현 계획 수립 (writing-plans)
+## 5단계: RPDCA 합류 (smart-pdca)
 
-초기 설정이 완료되면 vibecraft:writing-plans 스킬을 호출하여
-기능별 구현 계획서를 작성한다.
+초기 설정이 완료되면 **smart-pdca 스킬을 호출하여 RPDCA 흐름에 합류**한다.
+project-kickoff 고유 영역(1~4단계)이 끝나면, 이후는 일반 RPDCA와 동일하게 진행된다.
 
-계획서 위치: `docs/plans/기능명-구현계획.md`
+### 합류 시 규칙
 
----
+- **크기**: 항상 **L** (새 프로젝트는 전체 구현이므로)
+- **Research**: **스킵** (코드가 아직 없으므로 research 불필요)
+- **Brainstorming**: **스킵** (1단계에서 이미 수행됨)
+- **이후 흐름**: writing-plans(opus) → plan-critic(opus, 3라운드) → 사용자 확인 → executing-plans → gap-detector + Check-Act 루프
 
-## 6단계: 구현 시작 (executing-plans)
+```
+project-kickoff 1~4단계 완료
+   ↓
+smart-pdca (L 크기, research/brainstorming 스킵)
+   ↓
+writing-plans(opus) → plan-critic(opus, 3라운드 반복 수정) → 사용자 확인
+   ↓
+executing-plans(sonnet) → code-simplifier → external-reviewer → error-simulation
+   ↓
+verification(gap-detector(opus) + Check-Act 루프, 최대 3회)
+```
 
-계획서가 확정되면 vibecraft:executing-plans 스킬을 호출하여
-첫 번째 기능부터 순서대로 구현을 시작한다.
+> brainstorming의 설계 문서(docs/plans/{feature}/design.md)가 writing-plans의 입력이 된다.
 
 ---
 

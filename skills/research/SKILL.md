@@ -42,6 +42,8 @@ code-analyzer 서브에이전트에 위임하여 메인 컨텍스트를 보존�
    })
    ```
 
+   > code-analyzer 에이전트는 sonnet으로 실행된다. research는 "넓게 읽는" 작업이라 sonnet의 속도가 효율적이고, opus는 plan 작성/리뷰에 집중한다.
+
 3. **결과 수신** (메인에 들어오는 것):
    - research.md 저장 경로
    - Part 1 비즈니스 관점 전문 (사용자에게 바로 보여줄 수 있게)
