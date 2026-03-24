@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-hooks.json",
-  "description": "vibecraft 훅 설정 — 세션 시작 + 프리셋 로드 + 팀 복구 + 안전 가드 + 팀 모니터 + RPDCA 맥락 보존 + 의도 감지 + 코드 작성 가드 + RPDCA 자동 전진",
+  "description": "vibecraft 훅 설정 — 세션 시작 + 프리셋 로드 + 팀 복구 + 안전 가드 + 팀 모니터 + RPDCA 맥락 보존 + 의도 감지 + 코드 작성 가드 + RPDCA 자동 전진 + Stop 리마인더 + 스킬 체이닝",
   "hooks": {
     "SessionStart": [
       {
@@ -70,6 +70,29 @@
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/pre-write-guard.js\"",
             "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/skill-post.js\"",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/unified-stop.js\"",
+            "timeout": 10000
           }
         ]
       }

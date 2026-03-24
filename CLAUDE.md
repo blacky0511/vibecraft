@@ -93,8 +93,16 @@ vibecraft/
 ├── scripts/                  # 훅 실행 스크립트
 │   ├── session-start.js
 │   ├── preset-loader.js
+│   ├── user-prompt-handler.js  # UserPromptSubmit 의도 감지 (15가지+ 패턴)
+│   ├── unified-stop.js         # Stop 훅 — 매 응답 끝 명령어 리마인더
+│   ├── skill-post.js           # PostToolUse(Skill) — 스킬 체이닝
+│   ├── commit-guard.js         # PreToolUse(Bash) — 커밋 전 TDD 확인
+│   ├── git-safety-guard.js     # PreToolUse(Bash) — 위험 명령어 차단
+│   ├── pre-write-guard.js      # PreToolUse(Write) — 계획 없이 큰 코드 방지
+│   ├── context-compaction.js   # PreCompact — RPDCA 상태 스냅샷
+│   ├── rpdca-task-completed.js # TaskCompleted — RPDCA 자동 전진
 │   ├── sync-version.js         # plugin.json → marketplace.json 버전 동기화
-│   ├── team-monitor.js        # TeammateIdle/SubagentStop 훅 핸들러
+│   ├── team-monitor.js         # TeammateIdle/SubagentStop 훅 핸들러
 │   └── team-session-restore.js # 이전 팀 세션 복구
 ├── templates/                # 문서 템플릿 9개
 │   ├── plan.md               # 구현 계획서
@@ -109,8 +117,22 @@ vibecraft/
 ├── output-styles/            # 응답 포맷
 │   ├── learning.md           # 학습 모드
 │   └── standard.md           # 기본 모드
-├── commands/                 # 슬래시 명령어
-│   └── vibecraft.md          # /vibecraft 도움말
+├── commands/                 # 슬래시 명령어 15개
+│   ├── vibecraft.md          # /vibecraft 도움말
+│   ├── feature.md            # /feature 새 기능 추가
+│   ├── research.md           # /research 코드 리서치
+│   ├── brainstorm.md         # /brainstorm 아이디어 설계
+│   ├── plan.md               # /plan 구현 계획 작성
+│   ├── execute.md            # /execute 계획 실행
+│   ├── verify.md             # /verify 검증 게이트
+│   ├── debug.md              # /debug 디버깅
+│   ├── review.md             # /review 코드 리뷰
+│   ├── deploy.md             # /deploy 배포 가이드
+│   ├── kickoff.md            # /kickoff 프로젝트 시작
+│   ├── analyze.md            # /analyze 데이터 분석
+│   ├── simplify.md           # /simplify 코드 정리
+│   ├── team.md               # /team 에이전트팀
+│   └── pdca.md               # /pdca RPDCA 상태
 ├── lib/                      # 공통 유틸리티
 │   └── team/                  # 팀 엔진 (네이티브 API 위의 지능 계층)
 │       ├── index.js           # 통합 진입점
@@ -138,6 +160,7 @@ vibecraft/
 - Phase 5 (팀 엔진): 완료 - lib/team/ 8모듈, 훅 스크립트 2개, team-orchestration 스킬 업그레이드
 - Phase 6 (RPDCA): 완료 - PDCA→RPDCA 개편, research 스킬, plan-critic 에이전트, Codex MCP 연동
 - Phase 7 (Plan 품질 + Check-Act + 디버깅 강화 + kickoff 통합): 완료 - plan-critic opus 반복 수정, plan 초안 opus, gap-detector Match Rate, Check-Act 자동 루프, 디버깅 mini fix-plan + 영향 분석 + debugger opus, project-kickoff → RPDCA 합류
+- Phase 8 (트리거링 강화): 완료 - UserPromptSubmit 15가지+ 패턴 강화, ralph-loop 6가지 패턴 감지, 슬래시 명령어 5→16개(/ralph 포함), Stop 훅(매 응답 끝 리마인더 + /vibecraft 안내), PostToolUse(Skill) 스킬 체이닝, auto-detect 구어체/영어 키워드 대폭 확장, 테스트 109케이스 100% 통과
 
 ## RPDCA 워크플로우
 ```
