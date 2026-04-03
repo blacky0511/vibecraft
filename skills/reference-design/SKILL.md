@@ -1,11 +1,9 @@
 ---
 name: reference-design
 description: |
-  레퍼런스 기반 UI 디자인 스킬. 모드 A(URL 있음)와 모드 B(URL 없음)를 지원.
-  레퍼런스 사이트의 디자인 구조를 추출하고, docs/ux.md 토큰에 매핑하여
-  일관성 있는 UI를 생성한다. 애니메이션 추천 기능 포함.
-
-  Triggers: 랜딩페이지, UI, 디자인, 레퍼런스, 참고 사이트, 페이지 만들어, 웹사이트
+  UI/디자인/랜딩페이지/웹사이트를 만들 때 반드시 이 스킬을 호출하라.
+  레퍼런스 사이트의 디자인 구조를 추출하고 일관성 있는 UI를 생성한다.
+  Triggers: 랜딩페이지, 웹사이트, 홈페이지, UI 만들어, 디자인, 레퍼런스
 ---
 
 # 레퍼런스 기반 UI 디자인 (reference-design)
@@ -217,8 +215,8 @@ CLAUDE.md 5-4 구조의 테마 JSON을 생성한다.
 
 | 스킬 | 관계 |
 |------|------|
-| `auto-detect` | UI 관련 키워드 감지 시 이 스킬로 라우팅 |
-| `smart-pdca` | 작업 크기 판단 (S: 직접, M: 소규모 병렬, L: 팀) |
-| `iron-law` | TDD + 검증 필수 원칙 |
+| UserPromptSubmit 훅 | UI 관련 키워드 감지 시 이 스킬로 라우팅 |
+| `new-feature` | 작업 크기 판단 (S: 직접, M: 소규모 병렬, L: 팀) |
+| CLAUDE.md AI 행동 규칙 | TDD + 검증 필수 원칙 |
 | `writing-plans` | M/L 사이즈일 때 계획서 작성 |
 | `verification` | 완료 전 HARD-GATE 체크리스트 검증 |

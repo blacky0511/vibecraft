@@ -1,10 +1,9 @@
 ---
 name: welcome-guide
 description: |
-  사용자가 인사하거나 처음 시작할 때 vibecraft 사용 가이드를 보여주는 스킬.
-  Claude Code 활용법, vibecraft 핵심 기능, 시작 방법을 안내한다.
-
-  Triggers: 안녕, 하이, hi, hello, 시작, 뭐 할 수 있어, 도움, help, 처음
+  사용자가 인사하거나 처음 시작할 때 이 스킬을 호출하라.
+  vibecraft 사용 가이드와 시작 방법을 안내한다.
+  Triggers: 안녕, 하이, hi, hello, 처음, 도움, help
 ---
 
 # 환영 가이드 (Welcome Guide)
@@ -107,7 +106,7 @@ vibecraft를 쓰면서 자연스럽게 배우게 되는 것들:
 매 작업마다 💡 **Learning Point**에서 하나씩 알려드립니다!
 ```
 
-## auto-detect 연동
+## 트리거 연동
 
-auto-detect에서 인사/탐색 패턴을 감지하면 이 스킬을 호출한다.
+UserPromptSubmit 훅에서 인사/탐색 패턴을 감지하면 이 스킬을 호출한다.
 다른 모드(새 기능, 디버깅 등)로 명확히 판별되면 이 스킬은 스킵한다.

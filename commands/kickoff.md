@@ -22,7 +22,7 @@ vibecraft:project-kickoff 스킬을 호출하여 새 프로젝트를 시작한�
 
 ## 동작
 
-1. 아이디어 정리 (brainstorming)
+1. 아이디어 정리 (설계 질문)
 2. 기술 스택 선택
 3. 프로젝트 초기 설정 (scaffold)
 4. 구현 계획 수립 (writing-plans)

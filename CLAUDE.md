@@ -8,7 +8,7 @@ AI가 상황을 자동 감지하고, 사용자는 아이디어만 제공하면 �
 - **AI가 리드, 사용자는 방향만 결정** (바이브코딩 최적화)
 - **자동 감지**: 명령어 없이 입력만으로 워크플로우 자동 선택
 - **스마트 RPDCA**: Research-Plan-Do-Check-Act. 작업 크기(S/M/L)에 따라 방법론 강도 자동 조절
-- **Iron Law**: 테스트 먼저 + 증거 없이 완료 없다 + 수정 전 코드 상태 재확인
+- **Iron Law**: 테스트 먼저 + 증거 없이 완료 없다 (CLAUDE.md AI 행동 규칙에서 항상 적용)
 - **Plan Critic**: 계획서를 다른 관점(서브에이전트 + Codex MCP)으로 자동 리뷰
 - **범용 + 프리셋**: 어떤 프로젝트에서든 사용 가능, 기술 스택별 맞춤 지원
 
@@ -27,54 +27,28 @@ AI가 상황을 자동 감지하고, 사용자는 아이디어만 제공하면 �
 vibecraft/
 ├── .claude-plugin/           # 플러그인 메타데이터
 │   └── plugin.json
-├── skills/                   # 스킬 42개
-│   ├── # 핵심 엔진
-│   ├── auto-detect/          # 상황 자동 감지 + ralph-loop 라우팅
-│   ├── smart-pdca/           # 작업 크기별 RPDCA 조절
-│   ├── research/             # 코드베이스 리서치 (RPDCA의 R)
-│   ├── iron-law/             # TDD + 검증 필수 + 코드 재확인
-│   ├── evidence-first/       # 근거 우선 — 추측 금지 + 반증 의무 + E등급 체계
-│   ├── verification/         # 완료 전 검증 게이트
-│   ├── cto-mindset/          # CTO 마인드셋 (의견 제시)
-│   ├── session-context/      # 세션 맥락 보존 (compact 대비)
-│   ├── # 워크플로우
-│   ├── brainstorming/        # 아이디어 → 설계 (research 선행 필수)
-│   ├── writing-plans/        # 설계 → 구현 계획 + plan-critic 연동
-│   ├── new-feature/          # 새 기능 오케스트레이션
-│   ├── reference-design/     # 레퍼런스 기반 UI 디자인
-│   ├── simple-tweak/         # 단순 수정 안내 (DIY 가이드)
-│   ├── systematic-debugging/ # 체계적 디버깅 + RPDCA 연동
-│   ├── project-kickoff/      # 프로젝트 시작 가이드
-│   ├── git-workflow/         # Git 브랜치/커밋/PR 관리
+├── skills/                   # 스킬 17개
+│   ├── # 워크플로우 (핵심)
+│   ├── new-feature/          # 새 기능 오케스트레이션 (크기 판단 내장)
+│   ├── systematic-debugging/ # 체계적 디버깅 (크기별 분기 내장)
+│   ├── research/             # 코드베이스 리서치
+│   ├── writing-plans/        # 설계 + 구현 계획 (brainstorming 통합)
 │   ├── executing-plans/      # 서브에이전트 병렬 실행
-│   ├── team-orchestration/   # CTO 팀 구성
-│   ├── finishing-branch/     # 브랜치 정리
-│   ├── error-simulation/     # 코드 수정 후 오류 시뮬레이션 (M/L만)
-│   ├── # 코드 품질 (CTO 스마트 스킬)
-│   ├── security-baseline/    # 공통 보안 기본 원칙 (자동 적용)
-│   ├── impact-analysis/      # 수정 전 영향 범위 분석
-│   ├── pre-flight-check/     # 구현 전 중복/충돌 확인
-│   ├── dependency-auditor/   # 패키지 설치 전 검증
-│   ├── rollback-strategy/    # 위험 작업 전 체크포인트
-│   ├── naming-consultant/    # 변수/함수명 품질 제안
-│   ├── error-message-designer/ # 사용자 친화적 에러 메시지
-│   ├── consistency-enforcer/ # 프로젝트 패턴 일관성 감시
-│   ├── refactoring-radar/    # 코드 복잡도 감지 + 기술 부채 기록
-│   ├── test-strategy-advisor/ # 테스트 우선순위 가이드
-│   ├── doc-autopilot/        # 코드-문서 동기화
-│   ├── analysis-delegation/  # 분석 작업 서브에이전트 위임 (deep-analysis 내장)
+│   ├── verification/         # 검증 게이트 (오류 시뮬레이션 통합)
 │   ├── # 리뷰 & 배포
-│   ├── code-review-request/  # 코드 리뷰 요청
-│   ├── code-review-receive/  # 리뷰 피드백 처리
+│   ├── code-review-request/  # 코드 리뷰 (피드백 처리 통합)
 │   ├── external-reviewer/    # 외부 리뷰 도구 연동
 │   ├── deploy-guide/         # 배포 가이드
+│   ├── # 프로젝트 & UI
+│   ├── project-kickoff/      # 프로젝트 시작 가이드
+│   ├── reference-design/     # 레퍼런스 기반 UI 디자인
 │   ├── welcome-guide/        # 인사 시 사용법 가이드
-│   ├── # 프리셋
-│   ├── preset-spring/        # Spring Boot 프리셋
-│   ├── preset-nextjs/        # Next.js 프리셋
-│   ├── preset-react/         # React (Vite/CRA) 프리셋
-│   ├── preset-python/        # Python 프리셋
-│   └── preset-general/       # 범용 프리셋
+│   ├── # 도구
+│   ├── git-workflow/         # Git 관리 (브랜치 마무리 통합)
+│   ├── analysis-delegation/  # 분석 작업 서브에이전트 위임
+│   ├── team-orchestration/   # CTO 팀 구성
+│   ├── packet-capture/       # 네트워크 패킷 캡처 + API 추출
+│   └── naver-diagnosis/      # 네이버 서비스 진단
 ├── agents/                   # 에이전트 13개
 │   ├── cto-lead.md           # 팀 리드
 │   ├── plan-critic.md        # 계획서 악마의 변호인 (RPDCA)
@@ -161,17 +135,16 @@ vibecraft/
 - Phase 5 (팀 엔진): 완료 - lib/team/ 8모듈, 훅 스크립트 2개, team-orchestration 스킬 업그레이드
 - Phase 6 (RPDCA): 완료 - PDCA→RPDCA 개편, research 스킬, plan-critic 에이전트, Codex MCP 연동
 - Phase 7 (Plan 품질 + Check-Act + 디버깅 강화 + kickoff 통합): 완료 - plan-critic opus 반복 수정, plan 초안 opus, gap-detector Match Rate, Check-Act 자동 루프, 디버깅 mini fix-plan + 영향 분석 + debugger opus, project-kickoff → RPDCA 합류
-- Phase 8 (트리거링 강화): 완료 - UserPromptSubmit 15가지+ 패턴 강화, ralph-loop 6가지 패턴 감지, 슬래시 명령어 5→16개(/ralph 포함), Stop 훅(매 응답 끝 리마인더 + /vibecraft 안내), PostToolUse(Skill) 스킬 체이닝, auto-detect 구어체/영어 키워드 대폭 확장, 테스트 109케이스 100% 통과
+- Phase 8 (트리거링 강화): 완료
+- Phase 9 (v2.0 구조 개편): 완료 - 43개→17개 스킬 축소, "항상 활성화" 5개 스킬 CLAUDE.md 이관, 보조 12개 스킬 CLAUDE.md 체크리스트화, 프리셋 5개 훅 기반 주입, auto-detect→훅 이관, smart-pdca/brainstorming 등 5개 통합, description 적극적 리라이팅, packet-capture 신규
 
 ## RPDCA 워크플로우
 ```
-S: 바로 실행 → verification
-M: research(sonnet) → writing-plans(opus) → plan-critic(opus, 2라운드 반복 수정) → 사용자 확인
-   → executing-plans(sonnet) → code-simplifier → error-simulation
-   → verification(내부에서 gap-detector(opus) + Check-Act 자동 루프, 최대 2회)
-L: research(sonnet) → brainstorming → writing-plans(opus) → plan-critic(opus, 3라운드 반복 수정) → 사용자 확인
-   → executing-plans(sonnet) → code-simplifier → external-reviewer → error-simulation
-   → verification(내부에서 gap-detector(opus) + Check-Act 자동 루프, 최대 3회)
+S: 바로 코드 작성 → verification
+M: research → writing-plans(설계 포함) → plan-critic → 사용자 확인
+   → executing-plans → verification(오류 시뮬레이션 + gap-detector 포함)
+L: research → writing-plans(설계 포함) → plan-critic → 사용자 확인
+   → team-orchestration → external-reviewer → verification(오류 시뮬레이션 + gap-detector 포함)
 ```
 
 ### 단계별 모델 배정
@@ -206,3 +179,53 @@ L: research(sonnet) → brainstorming → writing-plans(opus) → plan-critic(op
 - 파일명: kebab-case
 - 들여쓰기: 2칸 (Space)
 - 훅 스크립트: Node.js (Windows/macOS 호환)
+
+## AI 행동 규칙 (항상 적용)
+
+### Iron Law (코드 품질)
+- **테스트 먼저**: 코드 작성 전 실패하는 테스트 작성 → 실패 확인 → 최소 구현 → 통과 확인
+- **예외**: UI/CSS 변경, 설정 파일, 문서, 프로토타입은 TDD 면제
+- **적용 강도**: S(선택) / M·L(필수)
+- **증거 없이 완료 없다**: 완료 선언 전 테스트 결과, 동작 확인, 로그 중 하나 필수 제시
+- **수정 전 재확인**: 같은 파일을 이미 수정했거나, compact 발생 후에는 파일을 다시 Read
+
+### Evidence First (추론 품질)
+- **근거 등급**: E1(실행 확인) > E2(코드 확인) > E3(논리 추론) > E0(추측)
+- **E0 행동 금지**: 추측만으로 코드 수정, 설계 결정, 디버깅 원인 확정 금지
+- **반증 의무**: 가설을 세우면 "이게 틀릴 수 있는 이유" 최소 1개 찾기
+- **등급 상승 의무**: E3 이하는 Grep/Read/실행으로 E2 이상 올리기 시도 필수
+- **추측 표시**: 확인 안 된 주장은 추측임을 밝힌다
+
+### CTO 마인드셋 (소통 품질)
+- **동의 시**: 왜 좋은지 근거 덧붙임
+- **반대 시**: 근거 + 대안 반드시 함께 제시
+- **위험한 요청**: 강하게 경고 후 안전한 방법으로 전환
+- **판단 애매**: 장단점 표 비교 + 추천안 제시
+- **금지**: 무조건 수용("네네"), 대안 없이 거부, 사용자 깎아내리기
+
+### 세션 맥락 보존
+- 개발 작업 시작 시 `docs/session.md` 생성 (최대 30줄, 현재 스냅샷만 유지)
+- 업데이트: 설계 확정, 파일 수정, 커밋 직전, 중요 결정 직후
+- compact 발생 시 session.md를 읽어 맥락 복구
+- 작업 완료 후 삭제
+
+### 보안 기본 원칙
+- 비밀값(API 키, 토큰, DB 정보)은 `.env`로 관리, `.gitignore`에 포함
+- SQL 쿼리는 파라미터 바인딩 필수 (문자열 결합 금지)
+- 사용자 입력은 서버에서 검증 (클라이언트만 신뢰 X)
+- 비밀번호는 반드시 해싱 저장 (bcrypt/argon2)
+- 에러 응답에 시스템 내부 정보 노출 금지
+
+## 코드 품질 체크리스트 (항상 적용)
+- 변수/함수명이 모호하면 더 명확한 이름 사용
+- 프로젝트 내 기존 패턴과 일관성 유지
+- 함수 30줄+ 또는 중첩 3단계+ 발견 시 리팩토링 제안
+- 코드 변경 시 관련 README/주석이 오래됐으면 업데이트 제안
+- 에러 메시지는 사용자용과 개발자 로그용 분리
+- 구현 전 기존 코드에 유사 기능이 있는지 확인
+- 새 패키지 설치 전 기존 대체재 확인
+- 대규모 수정 전 git stash 또는 브랜치 생성
+- 깨지면 위험한 것만 집중 테스트 (모든 것을 테스트하지 않음)
+- 코드 수정 전 해당 파일을 import하는 곳 확인
+- 수치/스타일 1~3줄 변경은 위치를 알려주고 사용자에게 직접 수정 기회 제공
+- M/L 수정 후 관련 시나리오에서 오류 가능성 확인

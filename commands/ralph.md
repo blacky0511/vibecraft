@@ -24,7 +24,7 @@ allowed-tools:
 
 # ralph-loop 반복 자동 수정
 
-smart-pdca에 `ralphLoop: true`를 전달하고 team-orchestration ralph-loop 모드를 실행한다.
+executing-plans에 `ralphLoop: true`를 전달하고 team-orchestration ralph-loop 모드를 실행한다.
 
 ## ralph-loop이란?
 

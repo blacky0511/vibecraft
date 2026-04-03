@@ -19,7 +19,7 @@ const PATTERNS = {
   simpleTweak: {
     primary: /바꿔\s?줘|색상|크기|폰트|패딩|마진|간격|높이|너비|굵기|투명도|키워\s?줘|줄여\s?줘|늘려\s?줘|줄여|굵게|얇게|밝게|어둡게|넓게|좁게/,
     secondary: /글자\s?크기|글씨\s?크기|배경\s?색|테두리|border|font.?size|padding|margin|opacity|width|height|gap|radius/i,
-    skill: 'vibecraft:simple-tweak',
+    skill: null,
     label: '단순 수정',
     priority: 1,
   },

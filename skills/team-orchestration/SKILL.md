@@ -1,11 +1,9 @@
 ---
 name: team-orchestration
 description: |
-  M/L 사이즈 작업 및 ralph-loop 팀 모드에서 lib/team/ 엔진을 사용하여 CTO 팀을 자동 구성하고
-  Claude Code 네이티브 API(TeamCreate, TaskCreate, SendMessage)로 병렬 실행을 조율하는 스킬.
-  점수 기반 에이전트 매칭, 의존성 Wave 계산, 실패 자동 복구를 수행한다.
-
-  Triggers: 팀, team, 병렬, parallel, CTO, team-orchestration, 팀 ralph-loop
+  대규모 병렬 작업이나 팀 구성을 요청할 때 반드시 이 스킬을 호출하라.
+  CTO 팀을 자동 구성하고 에이전트를 병렬로 실행한다.
+  Triggers: 팀, 병렬, team, parallel, 에이전트팀
 ---
 
 # CTO 팀 자동 구성 스킬 (lib/team/ 엔진 연동)
@@ -36,7 +34,7 @@ Claude Code 네이티브 API를 직접 호출하여 팀을 생성하고 태스�
 1. 계획서 Step에서 에이전트 2~3명 매칭 (config.mTeam 사용)
 2. TeamCreate("vibecraft-m-{기능명}")
 3. TaskCreate + 프롬프트 정제 + 에이전트 스폰 (worktree, background)
-4. 결과 수신 → code-simplifier → error-simulation → verification
+4. 결과 수신 → code-simplifier → verification (오류 시뮬레이션 포함)
 5. 실패 복구: retry 1회 → 에스컬레이션 (reassign 생략)
 
 **light 모드 제약:**

@@ -35,7 +35,7 @@ try {
       } else if (hasPlan) {
         stage = 'Plan (plan-critic 리뷰 대기)';
       } else if (hasDesign) {
-        stage = 'Plan (brainstorming 완료, writing-plans 대기)';
+        stage = 'Plan (설계 완료, writing-plans 대기)';
       } else if (hasResearch) {
         stage = 'Research (리서치 완료, 설계 대기)';
       } else {

@@ -1,13 +1,10 @@
 ---
 name: research
 description: |
-  코드베이스를 깊이 읽고 research.md를 생성하는 독립 리서치 스킬.
-  Part 1(비즈니스 관점, 사용자용)과 Part 2(기술 관점, AI용)로 구분하여
-  비개발자도 핵심 내용을 파악할 수 있게 작성한다.
-
-  독립 호출 가능하며, new-feature와 systematic-debugging 내부에서도 호출된다.
-
-  Triggers: 리서치, 리서치해줘, 조사, 조사해줘, research, 코드 조사, 파악해줘
+  사용자가 코드 조사, 구조 파악, 리서치를 요청할 때 반드시 이 스킬을 호출하라.
+  "리서치해줘", "조사해줘", "파악해줘", "살펴봐" 등의 요청이 있으면
+  이 스킬을 호출하여 체계적인 코드베이스 분석을 수행하라.
+  Triggers: 리서치, 조사, 파악, 살펴봐, research, investigate
 ---
 
 # 코드베이스 리서치
@@ -15,7 +12,7 @@ description: |
 ## 역할
 
 코드베이스를 **깊이** 읽고, 비즈니스 관점과 기술 관점을 분리한 리서치 문서를 생성한다.
-brainstorming에서 분리된 독립 스킬로, RPDCA의 R(Research) 단계를 담당한다.
+RPDCA의 R(Research) 단계를 담당하는 독립 스킬이다.
 
 ---
 
@@ -196,7 +193,7 @@ code-analyzer 서브에이전트에 위임하여 메인 컨텍스트를 보존�
 Part 1 (비즈니스 관점)을 확인해 주세요.
 특히 "결정이 필요한 것" 섹션에 답변을 주시면 설계에 반영하겠습니다.
 
-다음 단계: 확인 후 vibecraft:brainstorming 스킬을 호출하여 요구사항을 구체화합니다.
+다음 단계: 확인 후 vibecraft:writing-plans 스킬을 호출하여 구현 계획을 작성합니다.
 ```
 
 ---
@@ -216,7 +213,7 @@ Part 1 (비즈니스 관점)을 확인해 주세요.
 | 호출 방식 | 설명 |
 |----------|------|
 | 직접 호출 | 사용자가 "리서치해줘"로 직접 요청 |
-| new-feature 내부 | smart-pdca가 M/L 판별 후 자동 호출 |
+| new-feature 내부 | M/L 판별 후 자동 호출 |
 | systematic-debugging 내부 | M/L 버그에서 자동 호출 |
 
 ---
@@ -225,6 +222,5 @@ Part 1 (비즈니스 관점)을 확인해 주세요.
 
 | 스킬 | 연동 시점 | 역할 |
 |------|----------|------|
-| smart-pdca | 이 스킬 호출 전 | 크기 판별 후 M/L일 때 research 호출 |
-| brainstorming | 이 스킬 완료 후 (L만) | research.md 기반으로 요구사항 구체화 |
-| writing-plans | 이 스킬 완료 후 | research.md 기반으로 plan.md 작성 |
+| new-feature | 이 스킬 호출 전 | 크기 판별 후 M/L일 때 research 호출 |
+| writing-plans | 이 스킬 완료 후 | research.md 기반으로 설계 질문 + plan.md 작성 |

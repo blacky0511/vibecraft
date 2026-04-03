@@ -1,11 +1,10 @@
 ---
 name: executing-plans
 description: |
-  writing-plans에서 생성된 구현 계획을 받아 서브에이전트를 디스패치하여 실행하는 스킬.
-  태스크 규모에 따라 직접 실행(S), 소규모 병렬(M), CTO 팀 구성(L)으로 자동 분기한다.
-  각 태스크는 독립 worktree에서 격리 실행되며, 완료 후 리뷰 파이프라인이 자동으로 실행된다.
-
-  Triggers: 실행, 구현 시작, execute, 계획 실행, executing-plans
+  구현 계획 실행을 시작할 때 반드시 이 스킬을 호출하라.
+  plan.md를 기반으로 서브에이전트를 디스패치하여 코드를 구현한다.
+  이 스킬 없이 직접 구현하면 계획과 실제 코드가 괴리된다.
+  Triggers: 실행, 구현 시작, execute, 계획 실행
 ---
 
 # 구현 계획 실행 스킬
@@ -136,7 +135,7 @@ JWT 기반 로그인 API 엔드포인트를 구현한다.
 1. `team-orchestration` 스킬을 **light 모드**로 호출한다.
 2. 계획서의 Step을 분석하여 에이전트 2~3명을 매칭한다.
 3. TeamCreate → TaskCreate → 프롬프트 정제 → 에이전트 스폰 (worktree, background)
-4. 모든 에이전트 완료 후 → code-simplifier → error-simulation → verification(gap-detector + Check-Act 루프)
+4. 모든 에이전트 완료 후 → code-simplifier → verification(gap-detector + Check-Act 루프)
 5. 실패 시 retry 1회 → 에스컬레이션 (reassign 생략)
 
 **서브에이전트 프롬프트 생성:**
@@ -159,7 +158,7 @@ JWT 기반 로그인 API 엔드포인트를 구현한다.
 
 ### ralph-loop 모드: 반복 수정 루프
 
-smart-pdca에서 ralphLoop 플래그가 전달되었을 때 실행된다.
+new-feature에서 ralphLoop 플래그가 전달되었을 때 실행된다.
 기존 S/M/L 실행이 완료된 후에도, verification 실패 시 ralph-loop으로 전환 가능하다.
 
 ralph-loop은 독립 모드가 아니라, 기존 모드와 크기 위에 얹히는 반복 실행 방식이다.
@@ -213,23 +212,22 @@ git worktree remove .claude/worktrees/{브랜치명}
 | 크기 | 파이프라인 |
 |------|----------|
 | S | 리뷰 파이프라인 없음 — 바로 verification |
-| M | code-simplifier → error-simulation → **verification (내부에서 gap-detector 호출)** |
-| L | code-simplifier → external-reviewer → error-simulation → **verification (내부에서 gap-detector 호출)** |
+| M | code-simplifier → **verification (내부에서 오류 시뮬레이션 + gap-detector 호출)** |
+| L | code-simplifier → external-reviewer → **verification (내부에서 오류 시뮬레이션 + gap-detector 호출)** |
 
 > **gap-detector는 verification 내부에서 호출된다.** 리뷰 파이프라인에서 별도로 호출하지 않는다. verification이 gap-detector를 호출하여 Match Rate를 계산하고, 90% 미만 시 자동 수정 루프를 실행한다.
 
 ### L 크기 전체 파이프라인
 
 ```
-code-simplifier → external-reviewer → error-simulation → verification(gap-detector + Check-Act 루프)
+code-simplifier → external-reviewer → verification(오류 시뮬레이션 + gap-detector + Check-Act 루프)
 ```
 
 | 단계 | 담당 | 역할 |
 |------|------|------|
 | 1단계 | `code-simplifier` | 구현 코드 단순화 · 가독성 개선 |
 | 2단계 (L만) | `external-reviewer` | 외부 도구(ESLint 등)로 코드 검사 |
-| 3단계 | `error-simulation` | 잠재 오류 시뮬레이션 (M: 1~2회, L: 최대 3회) |
-| 4단계 | `verification` | gap-detector(Match Rate) + Check-Act 자동 루프 |
+| 3단계 | `verification` | 오류 시뮬레이션 + gap-detector(Match Rate) + Check-Act 자동 루프 |
 
 리뷰 결과에 지적 사항이 있으면 → 해당 Step을 수정하고 재실행한다.
 
@@ -270,7 +268,7 @@ code-simplifier → external-reviewer → error-simulation → verification(gap-
 ```
 1. 사용자: "전부 되돌려" 또는 "방향이 잘못됐어"
    ↓
-2. rollback-strategy의 체크포인트로 복원 (사용자 확인 필수)
+2. git stash 또는 브랜치로 복원 (사용자 확인 필수)
    ↓
 3. 범위를 축소하여 재계획
    - "이제 [좁은 범위]만 하자. 그 외엔 아무것도 하지 마."
@@ -305,7 +303,7 @@ executing-plans (현재 스킬: 계획 실행)
     │         │
     │         ▼
     │    리뷰 파이프라인
-    │    (code-simplifier → external-reviewer → error-simulation → verification(gap-detector))
+    │    (code-simplifier → external-reviewer → verification(오류 시뮬레이션 + gap-detector))
     │
     └── ralph-loop → team-orchestration (ralph-loop 모드) → iteration 루프
               │

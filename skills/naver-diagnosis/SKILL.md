@@ -1,14 +1,9 @@
 ---
 name: naver-diagnosis
 description: |
-  네이버 서비스 자동화 문제(블로그/카페/플레이스/검색/트래픽/스마트스토어)를 전문 진단하는 스킬.
-  naver-logic-analyzer 에이전트를 호출하여 5렌즈 통합 분석을 수행하고,
-  진단 결과를 이력으로 저장한 뒤 적절한 실행 스킬로 위임한다.
-
-  smart-pdca를 우회한다. 네이버 진단의 크기는 "원인 복잡도" 기반이므로
-  범용 S/M/L 기준과 다르다. 도메인 특화 진단 흐름을 자체적으로 관리한다.
-
-  Triggers: 네이버, 블로그, 카페, 플레이스, 스마트스토어, 봇 감지, 캡차, 차단, 403, 429, bvsd, encData, nCaptcha, 자동 포스팅, 크롤링, 순위 확인, naver, blog, cafe, place, smartstore, bot detection, captcha, blocked
+  네이버 서비스(블로그/카페/플레이스/스마트스토어) 자동화 문제를 진단할 때 반드시 이 스킬을 호출하라.
+  5렌즈 통합 분석으로 문제 원인을 체계적으로 파악한다.
+  Triggers: 네이버, 블로그, 카페, 플레이스, 스마트스토어, naver
 ---
 
 # 네이버 진단
@@ -21,7 +16,7 @@ description: |
 
 ---
 
-## auto-detect 트리거 패턴
+## 트리거 패턴 (UserPromptSubmit 훅 연동)
 
 ```
 한국어 키워드:
@@ -47,22 +42,22 @@ description: |
 
 ---
 
-## smart-pdca 우회
+## new-feature 크기 판단 우회
 
 ```
-네이버 자동화 문제는 도메인 특화 진단이 필요하므로 smart-pdca를 우회한다.
+네이버 자동화 문제는 도메인 특화 진단이 필요하므로 new-feature의 크기 판단을 우회한다.
 
 일반 작업 흐름:
-  auto-detect → smart-pdca(S/M/L 판단) → 크기별 워크플로우
+  new-feature(S/M/L 판단) → 크기별 워크플로우
 
 네이버 작업 흐름:
-  auto-detect → naver-diagnosis 스킬 (smart-pdca 우회)
+  naver-diagnosis 스킬 (크기 판단 우회)
     → 스킬 내부에서 자체 크기 판단:
       - 단순 (URL 변경 등): 간이 진단 → 바로 위임
       - 복합 (차단+변경 동시): 전체 진단 → 계획 확인 → 위임
 
 우회 이유:
-  - smart-pdca의 S/M/L 기준은 "코드 변경량" 기반
+  - new-feature의 S/M/L 기준은 "코드 변경량" 기반
   - 네이버 진단의 크기는 "원인 복잡도" 기반 → 판단 기준이 다름
   - 네이버 고유 참조 문서(docs/naver-knowledge/)가 필요하여 범용 R(Research)와 다름
 ```

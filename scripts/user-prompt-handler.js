@@ -26,7 +26,7 @@ const PATTERNS = {
   simpleTweak: {
     primary: /바꿔\s?줘|색상|크기|폰트|패딩|마진|간격|높이|너비|굵기|투명도|키워\s?줘|줄여\s?줘|늘려\s?줘|줄여|굵게|얇게|밝게|어둡게|넓게|좁게/,
     secondary: /글자\s?크기|글씨\s?크기|배경\s?색|테두리|border|font.?size|padding|margin|opacity|width|height|gap|radius/i,
-    skill: 'vibecraft:simple-tweak',
+    skill: null,
     label: '단순 수정',
     priority: 1,
   },
@@ -62,6 +62,26 @@ const PATTERNS = {
     skill: 'vibecraft:research',
     label: '리서치',
     priority: 2.5,
+  },
+
+  // 우선순위 2.7: 네이버 진단
+  naverDiagnosis: {
+    primary: /네이버|블로그|카페|플레이스|스마트스토어|검색\s?최적화/,
+    secondary: /진단|점검|분석|자동화|트래픽|노출|순위|검색어/,
+    english: /naver|blog|cafe|place|smartstore|SEO/i,
+    skill: 'vibecraft:naver-diagnosis',
+    label: '네이버 진단',
+    priority: 2.7,
+  },
+
+  // 우선순위 2.8: 패킷 캡처
+  packetCapture: {
+    primary: /패킷|API\s?추출|네트워크\s?캡처|요청\s?분석|XHR|fetch\s?요청/,
+    secondary: /API\s?따|패킷\s?따|트래픽\s?분석|엔드포인트\s?찾|API\s?역분석|인터셉트/,
+    english: /packet|network\s?capture|intercept|request\s?capture|API\s?extract/i,
+    skill: 'vibecraft:packet-capture',
+    label: '패킷 캡처',
+    priority: 2.8,
   },
 
   // 우선순위 3: 분석
@@ -288,22 +308,33 @@ try {
   // ralph-loop 명시적 요청이면 최우선 처리
   if (ralphMatch === 'explicit') {
     lines.push(`[SYSTEM] ralph-loop 명시적 요청 감지.`);
-    lines.push(`반드시 smart-pdca에 ralphLoop: true를 전달하고 team-orchestration ralph-loop 모드로 실행하세요.`);
+    lines.push(`반드시 executing-plans에 ralphLoop: true를 전달하고 team-orchestration ralph-loop 모드로 실행하세요.`);
     lines.push(`1. 검증 명령어를 확정하세요 (npm test, npx tsc --noEmit 등)`);
     lines.push(`2. 초기 측정 → 실패 항목 파싱 → Iteration 루프 시작`);
   } else if (isHighConfidence) {
     // 높은 신뢰도: 강한 지시
-    lines.push(`[SYSTEM] 사용자 의도 감지: "${best.config.label}" (신뢰도: 높음)`);
-    lines.push(`반드시 Skill 도구로 ${best.config.skill} 스킬을 호출하세요.`);
-    lines.push(`스킬을 호출하지 않고 직접 답변하지 마세요.`);
+    if (best.config.skill === null) {
+      // simpleTweak 등 스킬 없이 직접 가이드하는 패턴
+      lines.push(`[SYSTEM] 단순 수정 요청입니다. 수정 위치를 알려주고 사용자에게 직접 수정 기회를 제공하세요.`);
+    } else {
+      lines.push(`[SYSTEM] 사용자가 ${best.config.label} 작업을 요청했습니다.`);
+      lines.push(`반드시 Skill 도구로 ${best.config.skill} 스킬을 호출하세요.`);
+      lines.push(`이 스킬을 호출하지 않고 코드를 바로 작성하면 계획 없는 구현이 됩니다.`);
+      lines.push(`스킬을 먼저 호출한 후에만 작업을 시작하세요.`);
+    }
   } else {
     // 낮은 신뢰도: 후보 제시 + 1순위 추천
     const candidates = matches.slice(0, 3);
     lines.push(`[SYSTEM] 사용자 의도 후보 ${candidates.length}개 감지:`);
     candidates.forEach((m, i) => {
-      lines.push(`  ${i + 1}. ${m.config.label} → ${m.config.skill}`);
+      const skillInfo = m.config.skill ? m.config.skill : '(직접 가이드)';
+      lines.push(`  ${i + 1}. ${m.config.label} → ${skillInfo}`);
     });
-    lines.push(`1순위인 "${best.config.label}"에 해당하면 Skill 도구로 ${best.config.skill}을 호출하세요.`);
+    if (best.config.skill === null) {
+      lines.push(`1순위 "${best.config.label}"은 단순 수정입니다. 수정 위치를 알려주고 사용자에게 직접 수정 기회를 제공하세요.`);
+    } else {
+      lines.push(`1순위인 "${best.config.label}"에 해당하면 Skill 도구로 ${best.config.skill}을 호출하세요.`);
+    }
     lines.push(`확실하지 않으면 사용자에게 선택지를 제시하세요.`);
   }
 

@@ -1,11 +1,9 @@
 ---
 name: project-kickoff
 description: |
-  새 프로젝트를 처음부터 시작할 때의 가이드 스킬.
-  brainstorming → 기술 스택 선택 → 초기 설정 → 계획 수립 → 구현 시작의 흐름으로 진행한다.
-  auto-detect가 "프로젝트 시작 모드"로 감지하면 자동 호출된다.
-
-  Triggers: 만들자, 시작하자, 앱, 사이트, 프로젝트, 새 프로젝트, init
+  새 프로젝트를 처음부터 시작할 때 반드시 이 스킬을 호출하라.
+  기술 스택 선택, 초기 설정, 계획 수립까지 가이드한다.
+  Triggers: 프로젝트 시작, 새 프로젝트, 만들자, 시작하자, init, scaffold
 ---
 
 # 새 프로젝트 시작 워크플로우
@@ -19,7 +17,7 @@ description: |
 
 ## 1단계: 브레인스토밍
 
-brainstorming 스킬을 호출하여 아이디어를 구체화한다.
+writing-plans 스킬의 설계 질문으로 아이디어를 구체화한다.
 프로젝트 시작 시에는 추가로 다음을 확인한다:
 - 디자인 참고 사이트가 있는가? (있으면 URL 받아서 reference-design 모드 A)
 - 언제까지 만들고 싶은가? (일정에 따라 기능 범위 조정)
@@ -138,31 +136,28 @@ python -m venv venv
 
 ---
 
-## 5단계: RPDCA 합류 (smart-pdca)
+## 5단계: RPDCA 합류
 
-초기 설정이 완료되면 **smart-pdca 스킬을 호출하여 RPDCA 흐름에 합류**한다.
+초기 설정이 완료되면 **RPDCA 흐름에 합류**한다.
 project-kickoff 고유 영역(1~4단계)이 끝나면, 이후는 일반 RPDCA와 동일하게 진행된다.
 
 ### 합류 시 규칙
 
 - **크기**: 항상 **L** (새 프로젝트는 전체 구현이므로)
 - **Research**: **스킵** (코드가 아직 없으므로 research 불필요)
-- **Brainstorming**: **스킵** (1단계에서 이미 수행됨)
 - **이후 흐름**: writing-plans(opus) → plan-critic(opus, 3라운드) → 사용자 확인 → executing-plans → gap-detector + Check-Act 루프
 
 ```
 project-kickoff 1~4단계 완료
    ↓
-smart-pdca (L 크기, research/brainstorming 스킵)
-   ↓
 writing-plans(opus) → plan-critic(opus, 3라운드 반복 수정) → 사용자 확인
    ↓
-executing-plans(sonnet) → code-simplifier → external-reviewer → error-simulation
+executing-plans(sonnet) → code-simplifier → external-reviewer
    ↓
-verification(gap-detector(opus) + Check-Act 루프, 최대 3회)
+verification(오류 시뮬레이션 + gap-detector(opus) + Check-Act 루프, 최대 3회)
 ```
 
-> brainstorming의 설계 문서(docs/plans/{feature}/design.md)가 writing-plans의 입력이 된다.
+> 1단계의 설계 질문 결과가 writing-plans의 입력이 된다.
 
 ---
 

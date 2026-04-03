@@ -39,13 +39,13 @@ try {
   const isDocOnly = /\[(문서|설정|스타일)\]/.test(command);
 
   if (isDocOnly) {
-    console.log('[vibecraft] 문서/설정 커밋 감지 - iron-law TDD 면제 대상입니다.');
+    console.log('[vibecraft] 문서/설정 커밋 감지 - TDD 면제 대상입니다.');
     process.exit(0);
   }
 
   // 코드 변경 커밋 → 검증 체크리스트 출력
   console.log(
-    '[vibecraft] 커밋 전 검증 체크리스트 (iron-law):\n' +
+    '[vibecraft] 커밋 전 검증 체크리스트:\n' +
     '\n' +
     '1. 테스트를 실행했는가? (npm test, pytest 등)\n' +
     '2. 테스트가 모두 통과했는가?\n' +
@@ -53,7 +53,7 @@ try {
     '4. 불필요한 console.log/print가 남아있지 않은가?\n' +
     '\n' +
     '위 항목 중 하나라도 미충족이면, 커밋 전에 먼저 처리하세요.\n' +
-    'iron-law 면제 대상 (UI/CSS, 설정, 문서, 프로토타입)은 TDD를 건너뛰어도 됩니다.'
+    '면제 대상 (UI/CSS, 설정, 문서, 프로토타입)은 TDD를 건너뛰어도 됩니다.'
   );
 
 } catch (error) {

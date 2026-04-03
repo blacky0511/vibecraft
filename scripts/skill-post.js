@@ -13,12 +13,8 @@ const fs = require('fs');
 const SKILL_CHAIN = {
   // RPDCA 워크플로우 체인
   'vibecraft:research': {
-    next: '/plan (구현 계획) 또는 /brainstorm (설계)',
-    hint: 'research 완료. Skill 도구로 vibecraft:writing-plans 또는 vibecraft:brainstorming을 호출하세요.',
-  },
-  'vibecraft:brainstorming': {
     next: '/plan (구현 계획 작성)',
-    hint: '설계 완료. Skill 도구로 vibecraft:writing-plans를 호출하세요.',
+    hint: 'research 완료. Skill 도구로 vibecraft:writing-plans를 호출하세요.',
   },
   'vibecraft:writing-plans': {
     next: '/execute (계획 실행)',
@@ -41,11 +37,11 @@ const SKILL_CHAIN = {
 
   // 기타
   'vibecraft:new-feature': {
-    next: 'smart-pdca가 크기를 판단합니다',
-    hint: 'smart-pdca가 S/M/L 크기를 자동 판단합니다.',
+    next: 'S/M/L 크기를 판단하고 워크플로우를 실행합니다',
+    hint: 'new-feature가 크기를 판단하고 적절한 워크플로우를 실행합니다.',
   },
   'vibecraft:project-kickoff': {
-    next: '/brainstorm (아이디어 설계) 또는 /plan (계획)',
+    next: '/plan (구현 계획)',
     hint: '프로젝트 초기 설정 완료. 다음 단계로 진행하세요.',
   },
   'vibecraft:code-review-request': {
