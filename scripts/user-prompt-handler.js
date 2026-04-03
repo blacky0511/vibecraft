@@ -44,9 +44,9 @@ const PATTERNS = {
 
   // 우선순위 2: 디버깅
   debugging: {
-    primary: /에러|버그|오류|안\s?돼|안\s?되|안됨|실패|크래시|터져|터졌|깨져|깨졌|뻗어|뻗었|멈춰|멈췄|죽어|죽었/,
-    secondary: /작동.*안|동작.*안|왜\s?(?:이래|이러지|그래|그러지|안|이렇게)|뭐가\s?(?:문제|잘못|틀렸)|고장|먹통|무한\s?루프|무한\s?로딩/,
-    english: /error|bug|fix|crash|exception|fail|broken|not\s?work|TypeError|Cannot\s+read|undefined\s+is\s+not|null\s+pointer|stack\s?trace|Traceback/i,
+    primary: /에러|버그|오류|안\s?돼|안\s?되|안됨|실패|크래시|터져|터졌|깨져|깨졌|뻗어|뻗었|멈춰|멈췄|죽어|죽었|디버깅|디버그/,
+    secondary: /작동.*안|동작.*안|왜\s?(?:이래|이러지|그래|그러지|안|이렇게)|뭐가\s?(?:문제|잘못|틀렸)|고장|먹통|무한\s?루프|무한\s?로딩|버그\s?수정|에러\s?수정|오류\s?수정/,
+    english: /error|bug|fix|crash|exception|fail|broken|not\s?work|debug|TypeError|Cannot\s+read|undefined\s+is\s+not|null\s+pointer|stack\s?trace|Traceback/i,
     // 에러 메시지/스택트레이스 패턴
     stackTrace: /at\s+\w+\s*\(|Traceback\s*\(|line\s+\d+|:\d+:\d+\)|ENOENT|EACCES|ECONNREFUSED|ERR_|FATAL|panic:/,
     skill: 'vibecraft:systematic-debugging',
@@ -116,10 +116,10 @@ const PATTERNS = {
 
   // 우선순위 6: 새 기능
   newFeature: {
-    primary: /만들어\s?줘|추가해\s?줘|구현해\s?줘|넣어\s?줘|개발해\s?줘|기능\s?개발|기능\s?추가|기능\s?구현/,
-    secondary: /해\s?줘|해\s?봐|하고\s?싶|할\s?수\s?있|필요해|있었으면|있으면\s?좋겠/,
-    functional: /기능.*(?:개발|작업|시작|추가|구현|만들)|(?:개발|작업|시작|추가).*기능|새로운?\s?\w+\s?(?:만들|추가|구현|개발)/,
-    english: /feature|implement|create|build|add\s+(?:new|a)\s+/i,
+    primary: /만들어\s?줘|추가해\s?줘|구현해\s?줘|넣어\s?줘|개발해\s?줘|수정해\s?줘|변경해\s?줘|개선해\s?줘|기능\s?개발|기능\s?추가|기능\s?구현|기능\s?수정|기능\s?변경/,
+    secondary: /해\s?줘|해\s?봐|하고\s?싶|할\s?수\s?있|필요해|있었으면|있으면\s?좋겠|바꿔\s?줘|고쳐\s?줘|개선/,
+    functional: /기능.*(?:개발|작업|시작|추가|구현|만들|수정|변경)|(?:개발|작업|시작|추가|수정|변경).*기능|새로운?\s?\w+\s?(?:만들|추가|구현|개발)/,
+    english: /feature|implement|create|build|modify|change|update|improve|add\s+(?:new|a)\s+/i,
     skill: 'vibecraft:new-feature',
     label: '새 기능',
     priority: 6,
