@@ -27,12 +27,13 @@ AI가 상황을 자동 감지하고, 사용자는 아이디어만 제공하면 �
 vibecraft/
 ├── .claude-plugin/           # 플러그인 메타데이터
 │   └── plugin.json
-├── skills/                   # 스킬 41개
+├── skills/                   # 스킬 42개
 │   ├── # 핵심 엔진
 │   ├── auto-detect/          # 상황 자동 감지 + ralph-loop 라우팅
 │   ├── smart-pdca/           # 작업 크기별 RPDCA 조절
 │   ├── research/             # 코드베이스 리서치 (RPDCA의 R)
 │   ├── iron-law/             # TDD + 검증 필수 + 코드 재확인
+│   ├── evidence-first/       # 근거 우선 — 추측 금지 + 반증 의무 + E등급 체계
 │   ├── verification/         # 완료 전 검증 게이트
 │   ├── cto-mindset/          # CTO 마인드셋 (의견 제시)
 │   ├── session-context/      # 세션 맥락 보존 (compact 대비)
