@@ -1,53 +1,76 @@
 #!/usr/bin/env node
 
 /**
- * vibecraft Stop 훅 — 매 응답 끝 리마인더 + 스킬/에이전트 상태 정리
+ * vibecraft Stop 훅 — 매 응답 끝 리마인더 + 꿀팁
  *
  * Claude가 응답을 완료할 때마다 실행되어:
  * 1. 현재 RPDCA 단계에 맞는 다음 명령어를 자동 제안
- * 2. 진행 중인 작업이 있으면 상태를 상기
- * 3. 명령어 목록을 항상 표시하여 누락 방지
+ * 2. 랜덤 꿀팁 1개를 표시하여 사용법을 상기
  */
 
 const fs = require('fs');
 const path = require('path');
 
+// ── 꿀팁 풀 ────────────────────────────────────────────────
+
+const TIPS = [
+  '💡 /feature [설명]으로 기능 추가, /debug [증상]으로 버그 수정',
+  '💡 에러 메시지를 통째로 붙여넣으면 AI가 더 정확하게 분석합니다',
+  '💡 /packet [URL]로 웹사이트의 숨겨진 API를 추출할 수 있습니다',
+  '💡 /ralph [명령]으로 에러를 하나씩 자동 반복 수정할 수 있습니다',
+  '💡 /team [설명]으로 여러 에이전트가 동시에 작업할 수 있습니다',
+  '💡 /research [대상]으로 기존 코드를 먼저 분석하면 실수가 줄어듭니다',
+  '💡 /review만 입력하면 변경사항을 자동으로 리뷰합니다',
+  '💡 /brainstorm [아이디어]로 설계를 구체화할 수 있습니다',
+  '💡 /naver [증상]으로 네이버 자동화 문제를 진단할 수 있습니다',
+  '💡 자연어로 말해도 됩니다 — "이거 좀 이상해"만 해도 디버깅이 시작됩니다',
+  '💡 /simplify [경로]로 코드를 깔끔하게 정리할 수 있습니다',
+  '💡 /deploy로 배포 전 체크리스트를 자동으로 확인합니다',
+  '💡 /kickoff [이름]으로 새 프로젝트를 처음부터 시작할 수 있습니다',
+  '💡 큰 작업은 /feature, 간단한 건 그냥 말하세요 — AI가 크기를 판단합니다',
+  '💡 /verify로 작업이 제대로 됐는지 검증할 수 있습니다',
+];
+
+function pickRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 // ── RPDCA 단계별 추천 명령어 ────────────────────────────────
 
 const PHASE_GUIDE = {
   'pre-research': {
-    next: '/research',
-    message: '리서치를 시작하세요',
-    commands: '/research — 코드 조사  |  /feature — 새 기능  |  /debug — 디버깅',
+    next: '/research 또는 /feature',
+    message: '작업을 시작하세요',
+    commands: '/feature [설명]  |  /debug [증상]  |  /research [대상]',
   },
   research: {
-    next: '/plan 또는 /brainstorm',
-    message: '리서치 완료. 계획 또는 설계를 시작하세요',
-    commands: '/plan — 구현 계획  |  /brainstorm — 설계  |  /feature — 새 기능',
+    next: '/plan',
+    message: '리서치 완료. 계획을 작성하세요',
+    commands: '/plan [설명]  |  /brainstorm [아이디어]',
   },
   plan: {
     next: '/execute',
-    message: '계획 작성 완료. 실행을 시작하세요',
-    commands: '/execute — 실행  |  /plan — 계획 수정  |  /team — 팀 구성',
+    message: '계획 완료. 실행하세요',
+    commands: '/execute  |  /team [설명]',
   },
   do: {
     next: '/verify',
-    message: '구현 진행 중. 완료 후 검증하세요',
-    commands: '/verify — 검증  |  /review — 코드 리뷰  |  /debug — 디버깅',
+    message: '구현 중. 완료 후 검증하세요',
+    commands: '/verify  |  /review  |  /debug [증상]',
   },
   check: {
-    next: '/verify (재검증)',
-    message: '검증 중. Gap이 있으면 수정 후 재검증하세요',
-    commands: '/verify — 재검증  |  /execute — 추가 구현  |  /review — 리뷰',
+    next: '/verify',
+    message: '검증 중',
+    commands: '/verify  |  /execute',
   },
   act: {
     next: '커밋 또는 /deploy',
-    message: '작업 완료! 커밋하거나 배포하세요',
-    commands: '/review — 최종 리뷰  |  /deploy — 배포  |  /simplify — 코드 정리',
+    message: '작업 완료!',
+    commands: '/review  |  /deploy  |  /simplify [경로]',
   },
 };
 
-const DEFAULT_COMMANDS = '/feature — 새 기능  |  /debug — 디버깅  |  /kickoff — 프로젝트 시작\n/research — 조사  |  /review — 리뷰  |  /deploy — 배포  |  /analyze — 분석';
+const DEFAULT_COMMANDS = '/feature [설명]  |  /debug [증상]  |  /review  |  /packet [URL]';
 
 // ── RPDCA 상태 감지 ─────────────────────────────────────────
 
@@ -84,6 +107,7 @@ function detectRpdcaState() {
 
 try {
   const rpdca = detectRpdcaState();
+  const tip = pickRandom(TIPS);
   const lines = [];
 
   lines.push('');
@@ -91,16 +115,13 @@ try {
 
   if (rpdca) {
     const guide = PHASE_GUIDE[rpdca.phase] || PHASE_GUIDE['pre-research'];
-    lines.push(`[vibecraft] ${rpdca.feature} — ${guide.message}`);
-    lines.push(`  다음: ${guide.next}`);
+    lines.push(`📍 ${rpdca.feature} — ${guide.message}`);
     lines.push(`  ${guide.commands}`);
   } else {
-    lines.push('[vibecraft] 사용 가능한 명령어:');
-    lines.push(`  ${DEFAULT_COMMANDS}`);
+    lines.push(`📋 ${DEFAULT_COMMANDS}`);
   }
 
-  lines.push('  /ralph — 반복 자동 수정  |  /pdca — 진행 상태  |  /team — 에이전트팀');
-  lines.push('  전체 명령어 목록: /vibecraft');
+  lines.push(tip);
   lines.push('---');
 
   console.log(lines.join('\n'));
