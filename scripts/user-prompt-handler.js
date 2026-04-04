@@ -308,9 +308,10 @@ try {
   // ralph-loop 명시적 요청이면 최우선 처리
   if (ralphMatch === 'explicit') {
     lines.push(`[SYSTEM] ralph-loop 명시적 요청 감지.`);
-    lines.push(`반드시 executing-plans에 ralphLoop: true를 전달하고 team-orchestration ralph-loop 모드로 실행하세요.`);
-    lines.push(`1. 검증 명령어를 확정하세요 (npm test, npx tsc --noEmit 등)`);
-    lines.push(`2. 초기 측정 → 실패 항목 파싱 → Iteration 루프 시작`);
+    lines.push(`반드시 Skill 도구로 vibecraft:team-orchestration을 ralph-loop 모드로 호출하세요.`);
+    lines.push(`절차: 1. 사용자에게 검증 명령어 확인 (npm test, npx tsc --noEmit 등)`);
+    lines.push(`      2. 초기 측정 → 실패 항목 파싱 → 하나씩 반복 수정`);
+    lines.push(`스킬을 호출하지 않고 직접 수정하지 마세요.`);
   } else if (isHighConfidence) {
     // 높은 신뢰도: 강한 지시
     if (best.config.skill === null) {
@@ -340,10 +341,11 @@ try {
 
   // ralph-loop 제안 (명시적이 아닌 일괄 수정 패턴 감지 시)
   if (ralphMatch && ralphMatch !== 'explicit') {
-    lines.push(`[ralph-loop 제안] 이 요청은 "여러 항목을 반복 수정"하는 패턴입니다.`);
-    lines.push(`ralph-loop(반복 자동 수정)으로 진행하면 효율적입니다.`);
-    lines.push(`사용자에게 "ralph-loop으로 자동 반복 수정할까요?" 선택지를 반드시 제시하세요.`);
-    lines.push(`수락하면: 검증 명령어 확정 → 초기 측정 → team-orchestration ralph-loop 모드`);
+    lines.push(`[SYSTEM] 여러 항목을 반복 수정하는 요청이 감지되었습니다.`);
+    lines.push(`반드시 사용자에게 아래 2가지 선택지를 제시하세요:`);
+    lines.push(`1. ralph-loop 사용 — 검증 명령어를 정하고 자동으로 하나씩 반복 수정 (/ralph)`);
+    lines.push(`2. 직접 수정 — AI가 한번에 모두 수정 시도`);
+    lines.push(`선택지를 제시하지 않고 바로 수정을 시작하지 마세요.`);
   }
 
   // 에이전트 힌트
