@@ -17,6 +17,8 @@ const PATTERNS = {
   greeting: {
     primary: /^(안녕|하이|헬로|hi|hello|처음|시작|뭐해|반가워|왔어|야|여기|ㅎㅇ|ㅎㅎ|하잉)\s*[.!?~]*$/i,
     secondary: /뭐\s?할\s?수\s?있|도움|help|도움말|어떻게\s?써|사용법|가이드|알려\s?줘/i,
+    // 학습 요청도 welcome-guide로 라우팅
+    learning: /vibecraft\s?(?:사용법|배우|공부|알려|가이드)|클로드\s?코드\s?(?:사용법|배우|공부|알려)|claude\s?code\s?(?:사용법|배우|learn|guide|how\s?to)/i,
     skill: 'vibecraft:welcome-guide',
     label: '인사/도움말',
     priority: 0,
@@ -233,6 +235,7 @@ function matchPatterns(prompt) {
       if (config.english && config.english.test(prompt)) score += 1;
       if (config.stackTrace && config.stackTrace.test(prompt)) score += 2;
       if (config.functional && config.functional.test(prompt)) score += 1;
+      if (config.learning && config.learning.test(prompt)) score += 3; // 학습 요청은 높은 점수
     }
 
     if (score > 0) {
