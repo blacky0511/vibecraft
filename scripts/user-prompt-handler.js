@@ -15,8 +15,8 @@ const path = require('path');
 const PATTERNS = {
   // 우선순위 0: 인사 (작업 요청 없을 때만)
   greeting: {
-    primary: /^(안녕|하이|헬로|hi|hello|처음|시작)\s*[.!?~]*$/i,
-    secondary: /뭐\s?할\s?수\s?있|도움|help|도움말/i,
+    primary: /^(안녕|하이|헬로|hi|hello|처음|시작|뭐해|반가워|왔어|야|여기|ㅎㅇ|ㅎㅎ|하잉)\s*[.!?~]*$/i,
+    secondary: /뭐\s?할\s?수\s?있|도움|help|도움말|어떻게\s?써|사용법|가이드|알려\s?줘/i,
     skill: 'vibecraft:welcome-guide',
     label: '인사/도움말',
     priority: 0,
@@ -24,8 +24,8 @@ const PATTERNS = {
 
   // 우선순위 1: 단순 수정
   simpleTweak: {
-    primary: /바꿔\s?줘|색상|크기|폰트|패딩|마진|간격|높이|너비|굵기|투명도|키워\s?줘|줄여\s?줘|늘려\s?줘|줄여|굵게|얇게|밝게|어둡게|넓게|좁게/,
-    secondary: /글자\s?크기|글씨\s?크기|배경\s?색|테두리|border|font.?size|padding|margin|opacity|width|height|gap|radius/i,
+    primary: /바꿔\s?줘|색상|크기|폰트|패딩|마진|간격|높이|너비|굵기|투명도|키워\s?줘|줄여\s?줘|늘려\s?줘|줄여|굵게|얇게|밝게|어둡게|넓게|좁게|좀\s?더|좀\s?덜|조금만|살짝|약간|진하게|연하게|크게|작게|위로|아래로|왼쪽|오른쪽|가운데|센터|정렬/,
+    secondary: /글자\s?크기|글씨\s?크기|배경\s?색|테두리|border|font.?size|padding|margin|opacity|width|height|gap|radius|px|em|rem|색깔|사이즈|스페이싱|보더|그림자|shadow|display|flex|grid|z.?index|position/i,
     skill: null,
     label: '단순 수정',
     priority: 1,
@@ -44,9 +44,9 @@ const PATTERNS = {
 
   // 우선순위 2: 디버깅
   debugging: {
-    primary: /에러|버그|오류|안\s?돼|안\s?되|안됨|실패|크래시|터져|터졌|깨져|깨졌|뻗어|뻗었|멈춰|멈췄|죽어|죽었|디버깅|디버그/,
-    secondary: /작동.*안|동작.*안|왜\s?(?:이래|이러지|그래|그러지|안|이렇게)|뭐가\s?(?:문제|잘못|틀렸)|고장|먹통|무한\s?루프|무한\s?로딩|버그\s?수정|에러\s?수정|오류\s?수정/,
-    english: /error|bug|fix|crash|exception|fail|broken|not\s?work|debug|TypeError|Cannot\s+read|undefined\s+is\s+not|null\s+pointer|stack\s?trace|Traceback/i,
+    primary: /에러|버그|오류|안\s?돼|안\s?되|안됨|실패|크래시|터져|터졌|깨져|깨졌|뻗어|뻗었|멈춰|멈췄|죽어|죽었|디버깅|디버그|이상해|문제|잘못|안\s?나와|안\s?보여|안\s?열려|안\s?뜨|로딩|느려|늦어|404|500|화이트\s?스크린|빈\s?화면|무응답/,
+    secondary: /작동.*안|동작.*안|왜\s?(?:이래|이러지|그래|그러지|안|이렇게)|뭐가\s?(?:문제|잘못|틀렸)|고장|먹통|무한\s?루프|무한\s?로딩|버그\s?수정|에러\s?수정|오류\s?수정|왜\s?그래|왜\s?그러지|왜\s?이렇게|뭐가\s?문제야|원인|이유|해결|고쳐|고칠|수리|디버그해|에러\s?잡아|잡아\s?줘/,
+    english: /error|bug|fix|crash|exception|fail|broken|not\s?work|debug|TypeError|Cannot\s+read|undefined\s+is\s+not|null\s+pointer|stack\s?trace|Traceback|issue|problem|wrong|stuck|hanging|timeout|CORS|404|500|502|503/i,
     // 에러 메시지/스택트레이스 패턴
     stackTrace: /at\s+\w+\s*\(|Traceback\s*\(|line\s+\d+|:\d+:\d+\)|ENOENT|EACCES|ECONNREFUSED|ERR_|FATAL|panic:/,
     skill: 'vibecraft:systematic-debugging',
@@ -56,8 +56,8 @@ const PATTERNS = {
 
   // 우선순위 2.5: 리서치
   research: {
-    primary: /리서치|조사해?\s?줘|파악해?\s?줘|살펴\s?봐|확인해?\s?봐/,
-    secondary: /코드\s?조사|구조\s?파악|어떻게\s?되어?\s?있|현재\s?상태\s?파악|코드\s?베이스|아키텍처\s?파악/,
+    primary: /리서치|조사해?\s?줘|파악해?\s?줘|살펴\s?봐|확인해?\s?봐|알아\s?봐|찾아\s?봐|봐\s?봐|읽어\s?봐|코드\s?읽어|어떻게\s?돼\s?있어|어떤\s?구조|뭘로\s?만들어져/,
+    secondary: /코드\s?조사|구조\s?파악|어떻게\s?되어?\s?있|현재\s?상태\s?파악|코드\s?베이스|아키텍처\s?파악|흐름\s?파악|동작\s?원리|로직\s?파악|어떻게\s?작동|구조가\s?어떻게|뭐가\s?뭔지/,
     english: /research|investigate|explore\s+code|understand\s+code/i,
     skill: 'vibecraft:research',
     label: '리서치',
@@ -66,8 +66,8 @@ const PATTERNS = {
 
   // 우선순위 2.7: 네이버 진단
   naverDiagnosis: {
-    primary: /네이버|블로그|카페|플레이스|스마트스토어|검색\s?최적화/,
-    secondary: /진단|점검|분석|자동화|트래픽|노출|순위|검색어/,
+    primary: /네이버|블로그|카페|플레이스|스마트스토어|검색\s?최적화|네이버\s?블로그|네이버\s?카페|네이버\s?지도|검색\s?노출|상위\s?노출|키워드|블로그\s?글/,
+    secondary: /진단|점검|분석|자동화|트래픽|노출|순위|검색어|봇\s?차단|캡차|403|429|차단당|밴|IP\s?차단|로그인\s?안\s?돼|크롤링/,
     english: /naver|blog|cafe|place|smartstore|SEO/i,
     skill: 'vibecraft:naver-diagnosis',
     label: '네이버 진단',
@@ -76,9 +76,9 @@ const PATTERNS = {
 
   // 우선순위 2.8: 패킷 캡처
   packetCapture: {
-    primary: /패킷|API\s?추출|네트워크\s?캡처|요청\s?분석|XHR|fetch\s?요청/,
-    secondary: /API\s?따|패킷\s?따|트래픽\s?분석|엔드포인트\s?찾|API\s?역분석|인터셉트/,
-    english: /packet|network\s?capture|intercept|request\s?capture|API\s?extract/i,
+    primary: /패킷|API\s?추출|네트워크\s?캡처|요청\s?분석|XHR|fetch\s?요청|크롤링|스크래핑|자동화|데이터\s?수집|데이터\s?추출|긁어|가져와|뽑아/,
+    secondary: /API\s?따|패킷\s?따|트래픽\s?분석|엔드포인트\s?찾|API\s?역분석|인터셉트|API\s?주소|API\s?찾아|요청\s?보내|응답\s?구조|JSON\s?구조|헤더|쿠키|토큰\s?추출/,
+    english: /packet|network\s?capture|intercept|request\s?capture|API\s?extract|scrape|scraping|crawl|crawling|automation/i,
     skill: 'vibecraft:packet-capture',
     label: '패킷 캡처',
     priority: 2.8,
@@ -86,8 +86,8 @@ const PATTERNS = {
 
   // 우선순위 3: 분석
   analysis: {
-    primary: /분석해?\s?줘|데이터\s?뽑아|DB\s?조회|쿼리|통계|리포트|집계|현황|추출/,
-    secondary: /로그\s?분석|패턴\s?분석|트렌드|비교해?\s?줘|수치|지표|대시보드|엑셀|CSV/,
+    primary: /분석해?\s?줘|데이터\s?뽑아|DB\s?조회|쿼리|통계|리포트|집계|현황|추출|정리해|뽑아\s?줘|계산해|세어\s?줘|카운트/,
+    secondary: /로그\s?분석|패턴\s?분석|트렌드|비교해?\s?줘|수치|지표|대시보드|엑셀|CSV|몇\s?개|몇\s?건|얼마나|비율|퍼센트|평균|합계|건수/,
     english: /analyz|report|statistic|aggregate|query|dashboard|metric/i,
     skill: 'vibecraft:analysis-delegation',
     label: '데이터 분석',
@@ -96,8 +96,8 @@ const PATTERNS = {
 
   // 우선순위 4: 코드 리뷰
   review: {
-    primary: /리뷰|검토|봐\s?줘|확인해?\s?줘|체크해?\s?줘/,
-    secondary: /괜찮은지|문제\s?없는지|잘\s?됐는지|코드\s?품질|PR\s?확인|머지\s?전/,
+    primary: /리뷰|검토|봐\s?줘|확인해?\s?줘|체크해?\s?줘|이거\s?맞아|이렇게\s?해도\s?돼|이게\s?맞는\s?건지|맞는지/,
+    secondary: /괜찮은지|문제\s?없는지|잘\s?됐는지|코드\s?품질|PR\s?확인|머지\s?전|코드\s?괜찮|이상\s?없|제대로\s?된|잘\s?짠\s?건지|개선점|문제점/,
     english: /review|check\s*(?:code|quality|this)|look\s+at\s+(?:this|the\s+code)|\bPR\b/i,
     skill: 'vibecraft:code-review-request',
     label: '코드 리뷰',
@@ -106,8 +106,8 @@ const PATTERNS = {
 
   // 우선순위 5: 배포
   deploy: {
-    primary: /배포|릴리즈|서버에?\s?올려|운영.*반영|프로덕션|deploy/i,
-    secondary: /빌드\s?(?:하고|해서)\s?배포|docker|kubernetes|CI\s?\/?\s?CD/,
+    primary: /배포|릴리즈|서버에?\s?올려|운영.*반영|프로덕션|deploy|올려\s?줘|배포해\s?줘|서비스\s?오픈|런칭|라이브/i,
+    secondary: /빌드\s?(?:하고|해서)\s?배포|docker|kubernetes|CI\s?\/?\s?CD|도메인|SSL|HTTPS|nginx|pm2|vercel|netlify|AWS|서버\s?설정/i,
     english: /deploy|release|publish|production|staging/i,
     skill: 'vibecraft:deploy-guide',
     label: '배포',
@@ -116,9 +116,9 @@ const PATTERNS = {
 
   // 우선순위 6: 새 기능
   newFeature: {
-    primary: /만들어\s?줘|추가해\s?줘|구현해\s?줘|넣어\s?줘|개발해\s?줘|수정해\s?줘|변경해\s?줘|개선해\s?줘|기능\s?개발|기능\s?추가|기능\s?구현|기능\s?수정|기능\s?변경/,
-    secondary: /해\s?줘|해\s?봐|하고\s?싶|할\s?수\s?있|필요해|있었으면|있으면\s?좋겠|바꿔\s?줘|고쳐\s?줘|개선/,
-    functional: /기능.*(?:개발|작업|시작|추가|구현|만들|수정|변경)|(?:개발|작업|시작|추가|수정|변경).*기능|새로운?\s?\w+\s?(?:만들|추가|구현|개발)/,
+    primary: /만들어\s?줘|추가해\s?줘|구현해\s?줘|넣어\s?줘|개발해\s?줘|수정해\s?줘|변경해\s?줘|개선해\s?줘|기능\s?개발|기능\s?추가|기능\s?구현|기능\s?수정|기능\s?변경|하나\s?만들어|작업해\s?줘|코딩해\s?줘|짜\s?줘|작성해\s?줘|생성해\s?줘|제작해\s?줘|만들어\s?봐/,
+    secondary: /해\s?줘|해\s?봐|하고\s?싶|할\s?수\s?있|필요해|있었으면|있으면\s?좋겠|바꿔\s?줘|고쳐\s?줘|개선|하고\s?싶은\s?게|이런\s?거\s?할\s?수|이런\s?기능|되게\s?해\s?줘|할\s?수\s?있게/,
+    functional: /기능.*(?:개발|작업|시작|추가|구현|만들|수정|변경)|(?:개발|작업|시작|추가|수정|변경).*기능|새로운?\s?\w+\s?(?:만들|추가|구현|개발)|(?:페이지|컴포넌트|버튼|폼|테이블|모달|로그인|회원가입).*만들/,
     english: /feature|implement|create|build|modify|change|update|improve|add\s+(?:new|a)\s+/i,
     skill: 'vibecraft:new-feature',
     label: '새 기능',
@@ -127,8 +127,8 @@ const PATTERNS = {
 
   // 우선순위 7: 프로젝트 시작
   projectStart: {
-    primary: /만들자|시작하자|시작해\s?보자|프로젝트\s?(?:만들|시작|생성|초기화)/,
-    secondary: /앱\s?만들|사이트\s?만들|새\s?프로젝트|처음부터|init|scaffold|boilerplate/i,
+    primary: /만들자|시작하자|시작해\s?보자|프로젝트\s?(?:만들|시작|생성|초기화)|새로\s?만들자|뭐\s?만들까|하나\s?만들까|시작해\s?볼까|해\s?볼까/,
+    secondary: /앱\s?만들|사이트\s?만들|새\s?프로젝트|처음부터|init|scaffold|boilerplate|프로젝트\s?세팅|초기\s?설정|디렉토리\s?구조|새\s?앱|새\s?사이트|create.?next.?app|create.?react.?app|npx\s?create|vite/i,
     skill: 'vibecraft:project-kickoff',
     label: '프로젝트 시작',
     priority: 7,
@@ -261,7 +261,7 @@ function matchAgents(prompt) {
 
 function hasWorkRequest(prompt) {
   // 인사와 함께 작업 요청이 있는지 확인
-  return /만들|추가|구현|수정|고쳐|해\s?줘|바꿔|에러|버그|리뷰|배포|분석|시작|개발/.test(prompt);
+  return /만들|추가|구현|수정|고쳐|해\s?줘|바꿔|에러|버그|리뷰|배포|분석|시작|개발|작업|짜줘|작성|생성|제작|코딩|변경|개선|잡아|올려|크롤링|패킷|디버깅|디버그/.test(prompt);
 }
 
 // ── 메인 로직 ───────────────────────────────────────────────
