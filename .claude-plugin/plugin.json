@@ -1,6 +1,6 @@
 {
   "name": "vibecraft",
-  "version": "2.0.11",
+  "version": "2.0.12",
   "description": "바이브코딩 키트 v2 - 17개 핵심 스킬 + CLAUDE.md 자동 적용 규칙. 훅 기반 자동 감지 + 적극적 스킬 트리거링 + 크기별 워크플로우(S/M/L) + 패킷 캡처.",
   "author": {
     "name": "앤기브마케팅"
