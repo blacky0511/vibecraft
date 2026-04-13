@@ -193,26 +193,30 @@ const RPDCA_HINTS = {
 // ── 유틸리티 함수들 ─────────────────────────────────────────
 
 function detectRpdcaPhase() {
-  const plansDir = path.resolve('docs/plans');
-  if (!fs.existsSync(plansDir)) return null;
+  try {
+    const rpdca = require('./rpdca-state.js');
+    const active = rpdca.getActive();
+    if (active) return { feature: active.name, phase: active.phase };
 
-  const entries = fs.readdirSync(plansDir, { withFileTypes: true });
-  const features = entries.filter(e => e.isDirectory() && e.name !== 'archive');
+    // fallback: 상태 파일 없으면 기존 추정 로직
+    const plansDir = path.resolve('docs/plans');
+    if (!fs.existsSync(plansDir)) return null;
+    const entries = fs.readdirSync(plansDir, { withFileTypes: true });
+    const features = entries.filter(e => e.isDirectory() && e.name !== 'archive');
+    if (features.length === 0) return null;
 
-  if (features.length === 0) return null;
-
-  // 가장 최근 feature 기준
-  const feature = features[features.length - 1].name;
-  const featureDir = path.join(plansDir, feature);
-
-  const hasResearch = fs.existsSync(path.join(featureDir, 'research.md'));
-  const hasPlan = fs.existsSync(path.join(featureDir, 'plan.md'));
-  const hasPlanReview = fs.existsSync(path.join(featureDir, 'plan-review.md'));
-
-  if (hasPlan && hasPlanReview) return { feature, phase: 'do' };
-  if (hasPlan) return { feature, phase: 'plan' };
-  if (hasResearch) return { feature, phase: 'research' };
-  return { feature, phase: 'research' };
+    const feature = features[features.length - 1].name;
+    const featureDir = path.join(plansDir, feature);
+    const hasResearch = fs.existsSync(path.join(featureDir, 'research.md'));
+    const hasPlan = fs.existsSync(path.join(featureDir, 'plan.md'));
+    const hasPlanReview = fs.existsSync(path.join(featureDir, 'plan-review.md'));
+    if (hasPlan && hasPlanReview) return { feature, phase: 'do' };
+    if (hasPlan) return { feature, phase: 'plan' };
+    if (hasResearch) return { feature, phase: 'research' };
+    return { feature, phase: 'research' };
+  } catch {
+    return null;
+  }
 }
 
 function matchPatterns(prompt) {

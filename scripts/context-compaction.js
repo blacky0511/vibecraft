@@ -11,12 +11,29 @@
 const fs = require('fs');
 const path = require('path');
 
+let rpdcaState = null;
+try { rpdcaState = require('./rpdca-state.js'); } catch {}
+
 try {
-  // docs/plans/ 스캔하여 진행 중인 feature 탐지
+  // rpdca-state.json 우선 → 없으면 docs/plans/ 폴더 스캔 fallback
   const plansDir = path.resolve('docs/plans');
   const features = [];
 
-  if (fs.existsSync(plansDir)) {
+  const stateFeatures = rpdcaState ? rpdcaState.read().features : [];
+  if (stateFeatures.length > 0) {
+    for (const f of stateFeatures) {
+      features.push({
+        name: f.name,
+        stage: `${f.phase} (rpdca-state.json)`,
+        files: {
+          hasResearch: true,
+          hasPlan: f.phase !== 'research',
+          hasPlanReview: false,
+          hasDesign: false,
+        },
+      });
+    }
+  } else if (fs.existsSync(plansDir)) {
     const entries = fs.readdirSync(plansDir, { withFileTypes: true });
 
     for (const entry of entries) {

@@ -38,6 +38,15 @@ try {
     act: `[vibecraft] ${feature} Act 완료. gap-detector를 재실행하여 Match Rate를 재측정합니다.`
   };
 
+  // rpdca-state.json 업데이트 (실패해도 콘솔 출력은 진행)
+  try {
+    const rpdca = require('./rpdca-state.js');
+    rpdca.upsertFeature(feature, phase);
+    rpdca.setActive(feature);
+  } catch {
+    // 상태 파일 업데이트 실패는 조용히 무시 (알림 기능이 주목적)
+  }
+
   const message = nextSteps[phase];
   if (message) {
     console.log(message);
