@@ -54,6 +54,35 @@ M/L 크기 작업의 검증 시 추가 단계:
 
 ---
 
+## 백엔드/API 관련 작업 자동 검증 (backend-evaluator)
+
+수정된 파일 목록에 아래 경로/확장자가 포함되면 `backend-evaluator` 서브에이전트를 자동 호출한다:
+
+- `**/controllers/*`, `**/routes/*`, `**/api/*`, `**/handlers/*`
+- `**/models/*`, `**/entities/*`, `**/schemas/*` (DB 스키마 변경)
+- `*.java` (Spring Boot), `*.py` (FastAPI/Django), `*.ts`/`*.js` (Express/Fastify)
+
+backend-evaluator는 **Read + Bash(curl/psql/mysql/redis-cli)만 사용**하고 `Write/Edit/Grep/Glob`이 없어 코드를 볼 수 없는 검증 전용 에이전트다 (Generator/Evaluator 분리의 백엔드 버전).
+
+### 호출 절차
+
+1. 수정 파일 목록에서 위 경로/확장자가 1개 이상이면 백엔드 검증 대상으로 분류
+2. 로컬 서버 가용성 확인 (`curl` 헬스체크) — 없으면 사용자에게 서버 기동 요청
+3. `Agent` 도구로 `backend-evaluator` 서브에이전트 기동
+4. 프롬프트: "docs/plans/{feature}/plan.md를 기준으로 변경된 API 엔드포인트를 curl로 검증하라. 성공 경로 + 실패 경로 + DB 상태를 모두 확인하라."
+5. 판정이 "재작업 필요"이면 gap-detector Match Rate와 합산해 Act 루프 진입
+6. 판정이 "통과"이면 증거(curl 결과 요약 + DB 상태)를 verification 리포트에 포함
+
+### ui-evaluator와의 순서
+UI 파일과 백엔드 파일이 동시에 수정되면 **backend-evaluator를 먼저, ui-evaluator를 나중에** 호출한다 (UI가 백엔드에 의존하는 경우가 많음).
+
+### 주의
+- backend-evaluator는 **코드를 볼 수 없다**. 엔드포인트 추정은 plan.md 또는 OpenAPI 스펙에서만 가능
+- 프로덕션 DB 접근 금지 — 로컬/개발 DB에서만 검증
+- 파괴적 API(DELETE, UPDATE) 테스트는 테스트 데이터로만
+
+---
+
 ## UI 관련 작업 자동 검증 (ui-evaluator)
 
 수정된 파일 목록에 아래 확장자/경로가 포함되면 `ui-evaluator` 서브에이전트를 자동 호출한다:
