@@ -49,7 +49,6 @@ const PATTERNS = {
     primary: /에러|버그|오류|안\s?돼|안\s?되|안됨|실패|크래시|터져|터졌|깨져|깨졌|뻗어|뻗었|멈춰|멈췄|죽어|죽었|디버깅|디버그|이상해|문제|잘못|안\s?나와|안\s?보여|안\s?열려|안\s?뜨|안\s?바뀌|안\s?됨|로딩|느려|늦어|404|500|화이트\s?스크린|빈\s?화면|무응답|반응\s?없|응답\s?없|먹통|튕겨|튕김|튕기|뻗음|꺼져|꺼짐|안\s?먹|안\s?잡/,
     secondary: /작동.*안|동작.*안|왜\s?(?:이래|이러지|그래|그러지|안|이렇게)|뭐가\s?(?:문제|잘못|틀렸)|고장|먹통|무한\s?루프|무한\s?로딩|버그\s?수정|에러\s?수정|오류\s?수정|왜\s?그래|왜\s?그러지|왜\s?이렇게|뭐가\s?문제야|원인|이유|해결|고쳐|고칠|수리|디버그해|에러\s?잡아|잡아\s?줘|작동을?\s?안|동작을?\s?안|반응이?\s?없|응답이?\s?없|클릭해도|눌러도|아무.*없|갑자기|자꾸|계속\s?(?:안|실패|에러|튕|멈|죽|뻗)/,
     english: /error|bug|fix|crash|exception|fail|broken|not\s?work|debug|TypeError|Cannot\s+read|undefined\s+is\s+not|null\s+pointer|stack\s?trace|Traceback|issue|problem|wrong|stuck|hanging|timeout|CORS|404|500|502|503|ECONNREFUSED|ENOENT|EACCES|ERR_/i,
-    english: /error|bug|fix|crash|exception|fail|broken|not\s?work|debug|TypeError|Cannot\s+read|undefined\s+is\s+not|null\s+pointer|stack\s?trace|Traceback|issue|problem|wrong|stuck|hanging|timeout|CORS|404|500|502|503/i,
     // 에러 메시지/스택트레이스 패턴
     stackTrace: /at\s+\w+\s*\(|Traceback\s*\(|line\s+\d+|:\d+:\d+\)|ENOENT|EACCES|ECONNREFUSED|ERR_|FATAL|panic:/,
     skill: 'vibecraft:systematic-debugging',
@@ -271,7 +270,7 @@ function hasWorkRequest(prompt) {
 // ── 메인 로직 ───────────────────────────────────────────────
 
 try {
-  const input = JSON.parse(fs.readFileSync('/dev/stdin', 'utf8'));
+  const input = JSON.parse(fs.readFileSync(0, 'utf8'));
   const prompt = (input.prompt || '').trim();
 
   if (!prompt || prompt.startsWith('/')) {
