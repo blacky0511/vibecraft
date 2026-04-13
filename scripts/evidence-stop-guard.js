@@ -3,42 +3,75 @@
 /**
  * vibecraft Stop 훅 — "증거 없이 완료 없다" 결정론적 강제
  *
- * 최근 응답에서 코드 수정이 있었는지 확인하고,
- * 증거(테스트 실행/동작 확인/로그 출력)가 없으면 block 반환한다.
+ * 최근 응답에서 **코드 파일** 수정이 있었는지 확인하고,
+ * 증거(실제 Bash 실행 or 키워드)가 없으면 block 반환한다.
  *
- * 참고한 공식 스키마:
+ * v2.2.0 변경점 (CTO 리뷰 반영):
+ *  - 코드 확장자 필터: .md/.json/.css/.html/.yml 등 비코드는 증거 검사 면제
+ *  - Bash tool_use 실존 검증: 단순 키워드 매칭 → 실제 실행 레코드 확인
+ *  - 워드 바운더리: "PASSWORD"가 "PASS"로 오판되지 않도록
+ *  - 대용량 transcript 크기 가드: 5MB 초과 시 조기 종료
+ *  - 평문 메시지: "[Iron Law 위반]" → "[완료 전 확인 필요]"
+ *
+ * 공식 스키마 참고:
  * - input: { stop_hook_active, transcript_path, last_assistant_message, ... }
- * - JSONL 레코드: { type:"assistant", message:{ content:[ {type:"tool_use", name:"Edit"}, ... ] } }
+ * - JSONL 레코드: { type:"assistant", message:{ content:[ {type:"tool_use", name:"Edit", input:{file_path}}, ... ] } }
  */
 
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-// 증거 키워드 (이 중 하나라도 있으면 통과)
-const EVIDENCE_KEYWORDS = [
-  'PASS', '통과', '성공',
-  'npm test', 'pytest', 'jest', 'vitest',
-  'exit 0', 'exit code 0', '종료 코드 0',
-  '테스트 결과', '실행 결과',
-  'Playwright', 'snapshot',
-  '로그 확인', '로그 출력',
+// 코드 파일로 간주하는 확장자 (이것들이 수정되었을 때만 증거 요구)
+// .md/.json/.yml/.css/.html/.svg/.env/.gitignore 등은 TDD 면제 (CLAUDE.md Iron Law 예외 준수)
+const CODE_EXTENSIONS = new Set([
+  '.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs',
+  '.py', '.pyw',
+  '.java', '.kt', '.kts', '.scala',
+  '.go', '.rs',
+  '.c', '.h', '.cpp', '.hpp', '.cc', '.cxx',
+  '.rb', '.php', '.cs', '.swift', '.m', '.mm',
+  '.sh', '.bash', '.zsh',
+  '.sql',
+  '.vue', '.svelte', // 논란의 여지 있지만 <script> 포함 가능
+]);
+
+// 증거 키워드 (워드 바운더리 기반 정규식)
+// "PASSWORD"가 "PASS"로 오판되지 않도록 \b 경계 사용
+const EVIDENCE_REGEX = [
+  /\bPASS(?:ED)?\b/,           // PASS, PASSED — PASSWORD 제외
+  /통과/,                        // 한국어
+  /성공/,                        // 한국어
+  /\bnpm\s+(?:test|run\s+test)\b/,
+  /\bpytest\b/,
+  /\bjest\b/,
+  /\bvitest\b/,
+  /\bmocha\b/,
+  /\bexit\s+code?\s+0\b/,
+  /종료\s*코드\s*0/,
+  /테스트\s*(?:결과|완료)/,
+  /실행\s*(?:결과|완료)/,
+  /\bPlaywright\b/,
+  /\bsnapshot/,
+  /로그\s*(?:확인|출력)/,
 ];
 
-// 코드 수정 도구 이름
-const EDIT_TOOLS = ['Edit', 'Write', 'MultiEdit', 'NotebookEdit'];
+// 코드 수정 도구
+const EDIT_TOOLS = new Set(['Edit', 'Write', 'MultiEdit', 'NotebookEdit']);
 
-// Windows/POSIX 호환 stdin 읽기 (파일디스크립터 0)
+// 대용량 transcript 가드
+const MAX_TRANSCRIPT_BYTES = 5 * 1024 * 1024; // 5MB
+
+// Windows/POSIX 호환 stdin 읽기
 function readStdin() {
   try {
     return fs.readFileSync(0, 'utf8');
   } catch {
-    // fallback: /dev/stdin (POSIX)
     try { return fs.readFileSync('/dev/stdin', 'utf8'); } catch { return ''; }
   }
 }
 
-// 홈 디렉토리 경로(~)를 확장
+// ~ 경로 확장
 function expandHome(p) {
   if (!p) return p;
   if (p.startsWith('~/') || p === '~') {
@@ -47,11 +80,41 @@ function expandHome(p) {
   return p;
 }
 
+// 파일 경로에서 확장자 추출 (소문자)
+function getExt(filePath) {
+  if (typeof filePath !== 'string') return '';
+  return path.extname(filePath).toLowerCase();
+}
+
+// 코드 파일 수정 여부 판정
+function isCodeEdit(toolUse) {
+  if (!toolUse || toolUse.type !== 'tool_use') return false;
+  if (!EDIT_TOOLS.has(toolUse.name)) return false;
+  const filePath = toolUse.input?.file_path || toolUse.input?.filePath || '';
+  const ext = getExt(filePath);
+  // 확장자를 못 구하면 보수적으로 코드로 간주하지 않음 (거짓 양성 방지)
+  if (!ext) return false;
+  return CODE_EXTENSIONS.has(ext);
+}
+
+// 어시스턴트 메시지의 content 배열에서 tool_use 추출
+function extractToolUses(entry) {
+  const content = entry?.message?.content;
+  if (!Array.isArray(content)) return [];
+  return content.filter(c => c?.type === 'tool_use');
+}
+
+// 증거 키워드 매칭 (정규식 기반)
+function hasEvidenceKeyword(text) {
+  if (typeof text !== 'string' || !text) return false;
+  return EVIDENCE_REGEX.some(re => re.test(text));
+}
+
 try {
   const raw = readStdin();
   const input = raw ? JSON.parse(raw) : {};
 
-  // 무한 루프 방지: 이미 한 번 block했으면 통과
+  // 무한 루프 방지
   if (input.stop_hook_active === true) {
     process.exit(0);
   }
@@ -61,60 +124,72 @@ try {
     process.exit(0);
   }
 
-  // transcript 전체 읽고, 마지막 user 턴 이후 레코드만 사용.
-  // (이전 턴의 Edit까지 포함하면 현재 턴이 설명만이어도 block이 발동할 수 있음)
+  // 대용량 transcript 크기 가드
+  let fileSize = 0;
+  try {
+    fileSize = fs.statSync(transcriptPath).size;
+  } catch {
+    process.exit(0);
+  }
+  if (fileSize > MAX_TRANSCRIPT_BYTES) {
+    // 너무 크면 마지막 500KB만 읽기 (head 자르기)
+    // 여기서는 간단히 스킵 — 정확도 포기하고 안정성 우선
+    process.exit(0);
+  }
+
   const transcriptRaw = fs.readFileSync(transcriptPath, 'utf8');
   const allLines = transcriptRaw.split('\n').filter(Boolean);
 
-  // 역순으로 가장 최근 user 메시지 인덱스 찾기
+  // 가장 최근 "진짜" user 메시지 찾기 (tool_result 용도의 user 턴 제외)
   let lastUserIdx = -1;
   for (let i = allLines.length - 1; i >= 0; i--) {
     try {
       const e = JSON.parse(allLines[i]);
-      // user 메시지: type==='user' 또는 message.role==='user'
-      if (e?.type === 'user' || e?.message?.role === 'user') {
-        lastUserIdx = i;
-        break;
+      const isUser = e?.type === 'user' || e?.message?.role === 'user';
+      if (!isUser) continue;
+
+      // tool_result만 담긴 user 턴은 건너뜀
+      const content = e?.message?.content;
+      if (Array.isArray(content) && content.every(c => c?.type === 'tool_result')) {
+        continue;
       }
+      lastUserIdx = i;
+      break;
     } catch {}
   }
 
-  // user 턴 이후 라인만 검사 (없으면 최근 100줄로 fallback)
+  // user 턴 이후 라인만 검사
   const afterUser = lastUserIdx >= 0
     ? allLines.slice(lastUserIdx + 1)
     : allLines.slice(-100);
-  // 대용량 방어: 너무 길면 마지막 200줄까지만
   const recent = afterUser.length > 200 ? afterUser.slice(-200) : afterUser;
 
-  // 코드 수정이 있었는지 확인 — content 배열 전체 순회
-  let hasEdit = false;
+  // 코드 수정 + Bash 실행 여부 확인 (전체 content 순회)
+  let hasCodeEdit = false;
+  let hasBashExec = false;
   for (const line of recent) {
     try {
       const entry = JSON.parse(line);
-      const content = entry?.message?.content;
-      if (Array.isArray(content)) {
-        const found = content.some(
-          c => c?.type === 'tool_use' && EDIT_TOOLS.includes(c.name)
-        );
-        if (found) {
-          hasEdit = true;
-          break;
-        }
+      const toolUses = extractToolUses(entry);
+      for (const tu of toolUses) {
+        if (isCodeEdit(tu)) hasCodeEdit = true;
+        if (tu.name === 'Bash') hasBashExec = true;
       }
     } catch {}
   }
 
-  if (!hasEdit) {
-    // 코드 수정 없음 — 통과
+  // 코드 수정이 없으면 통과 (문서/설정/UI/CSS 수정은 TDD 면제)
+  if (!hasCodeEdit) {
     process.exit(0);
   }
 
-  // 증거 키워드 검사: last_assistant_message 우선, 없으면 user 턴 이후 레코드에서 검색
+  // 증거 수집: (1) last_assistant_message 키워드, (2) Bash 실제 실행
   const lastMsg = typeof input.last_assistant_message === 'string' ? input.last_assistant_message : '';
-  const searchText = lastMsg || recent.join('\n');
-  const hasEvidence = EVIDENCE_KEYWORDS.some(k => searchText.includes(k));
+  const keywordEvidence = hasEvidenceKeyword(lastMsg);
+  const bashEvidence = hasBashExec;
 
-  if (hasEvidence) {
+  // 둘 중 하나라도 있으면 통과
+  if (keywordEvidence || bashEvidence) {
     process.exit(0);
   }
 
@@ -122,9 +197,9 @@ try {
   const response = {
     decision: 'block',
     reason:
-      '[Iron Law 위반] 코드를 수정했지만 검증 증거가 없습니다. ' +
-      '테스트 실행 결과, 동작 확인 로그, Playwright 스냅샷 중 하나 이상을 제시한 뒤 응답을 마무리하세요. ' +
-      '수정 내역을 검증할 수 없는 상태로 완료하면 버그가 그대로 배포됩니다.',
+      '[완료 전 확인 필요] 코드 파일(.js/.ts/.py 등)을 수정했는데 검증 증거가 확인되지 않습니다.\n' +
+      '테스트 실행 결과(예: `npm test`, `pytest`) 또는 동작 확인 로그를 응답에 포함한 뒤 마무리해주세요.\n' +
+      '문서/설정/UI 파일만 수정했다면 이 메시지는 잘못 발동한 것이니 사용자에게 상황을 설명하고 한 번 더 시도하세요.',
   };
 
   console.log(JSON.stringify(response));
