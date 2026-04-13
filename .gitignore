@@ -3,3 +3,11 @@ node_modules/
 Thumbs.db
 *.log
 .env
+
+# vibecraft 런타임 상태 (로컬 전용)
+docs/plans/rpdca-state.json
+docs/plans/rpdca-state.json.bak
+docs/session.md
+
+# rpdca-state 원자적 쓰기 중 임시 파일
+docs/plans/.rpdca-state.*.tmp
