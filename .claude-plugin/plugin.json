@@ -1,7 +1,7 @@
 {
   "name": "vibecraft",
-  "version": "2.1.0",
-  "description": "바이브코딩 키트 v2.1 - 하네스 엔지니어링 적용. 17개 핵심 스킬 + Stop 훅 Iron Law 강제 + PostToolUseFailure 자동 진단 + RPDCA 상태 JSON + ui-evaluator(Generator/Evaluator 분리) + 에이전트 tools 화이트리스트.",
+  "version": "2.2.0",
+  "description": "바이브코딩 키트 v2.2 - 하네스 엔지니어링 강화판. CTO 3인 리뷰 반영: evidence-stop-guard 거짓양성 해결 + rpdca-state 원자적 쓰기 + PostCompact 복원 훅 + backend-evaluator(Generator/Evaluator 백엔드 확장) + Windows/한국어 호환 개선.",
   "author": {
     "name": "앤기브마케팅"
   },
