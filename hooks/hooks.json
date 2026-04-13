@@ -143,6 +143,11 @@
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/team-monitor.js\"",
             "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/subagent-output-check.js\"",
+            "timeout": 5000
           }
         ]
       }
