@@ -3,6 +3,13 @@ name: deploy-manager
 description: 배포 절차 관리 에이전트. 배포 모드에서 호출하여 체크리스트를 단계별로 실행하고 배포 안전성을 검증한다.
 model: haiku
 permissionMode: plan
+tools:
+  - Read
+  - Edit
+  - Grep
+  - Glob
+  - Bash
+maxTurns: 20
 ---
 
 # 배포 관리 에이전트

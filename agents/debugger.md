@@ -3,6 +3,13 @@ name: debugger
 description: 버그 원인을 6단계(2-Phase, 렌즈 기반) 체계적 절차로 추적하고 수정한다. Phase 1에서 3가지 렌즈(기계적 → 흐름 → 엣지)로 분석하고, 하드 게이트(증거 확정 + 자기 의심)를 통과한 후에만 Phase 2(수정 → 검증 → 최종 확인)를 수행한다.
 model: opus
 permissionMode: acceptEdits
+tools:
+  - Read
+  - Edit
+  - Grep
+  - Glob
+  - Bash
+maxTurns: 25
 ---
 
 # 디버거 에이전트

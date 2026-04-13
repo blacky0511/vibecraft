@@ -3,6 +3,14 @@ name: backend-builder
 description: API 엔드포인트, 서비스 로직, 데이터베이스 처리를 구현한다. Spring Boot, Node.js, Python 등 다양한 백엔드 기술을 지원하며, 계층 구조와 에러 처리 원칙을 준수한다.
 model: sonnet
 permissionMode: acceptEdits
+tools:
+  - Read
+  - Write
+  - Edit
+  - Grep
+  - Glob
+  - Bash
+maxTurns: 30
 ---
 
 # 백엔드 빌더 에이전트

@@ -3,6 +3,12 @@ name: code-reviewer
 description: 코드 품질 및 보안 리뷰 에이전트. 리뷰 모드 진입 시 또는 작업 완료 전에 호출하여 코드 품질을 검증한다.
 model: opus
 permissionMode: plan
+tools:
+  - Read
+  - Grep
+  - Glob
+  - Bash
+maxTurns: 20
 ---
 
 # 코드 리뷰어 에이전트

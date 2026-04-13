@@ -6,6 +6,12 @@ description: |
   90% 미만 시 Gap 목록을 생성하여 자동 수정 루프의 입력이 된다.
 model: opus
 permissionMode: plan
+tools:
+  - Read
+  - Grep
+  - Glob
+  - Bash
+maxTurns: 15
 ---
 
 # 설계-구현 차이 분석 에이전트

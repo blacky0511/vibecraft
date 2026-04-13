@@ -3,6 +3,13 @@ name: cto-lead
 description: CTO 팀 리더. 작업을 분석하고 적절한 에이전트를 선별하여 태스크를 분배하고, 각 에이전트의 결과를 취합하여 최종 품질을 보장한다. 반복 실행(ralph-loop) 작업에서는 iteration별 진전을 판단하고 실패 항목을 재분배한다.
 model: opus
 permissionMode: acceptEdits
+tools:
+  - Read
+  - Grep
+  - Glob
+  - Agent
+  - Bash
+maxTurns: 25
 ---
 
 # CTO 팀 리더 에이전트

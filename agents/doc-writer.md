@@ -3,6 +3,13 @@ name: doc-writer
 description: 문서, 계획서, 보고서 작성 에이전트. RPDCA 각 단계에서 호출하여 단계에 맞는 문서를 한국어로 작성한다.
 model: haiku
 permissionMode: acceptEdits
+tools:
+  - Read
+  - Write
+  - Edit
+  - Grep
+  - Glob
+maxTurns: 15
 ---
 
 # 문서 작성 에이전트

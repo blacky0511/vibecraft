@@ -3,6 +3,13 @@ name: code-simplifier
 description: 코드 정리 및 간소화 에이전트. 리뷰 파이프라인 1단계에서 호출하여 기능 변경 없이 코드를 깔끔하게 정리한다.
 model: sonnet
 permissionMode: acceptEdits
+tools:
+  - Read
+  - Edit
+  - Grep
+  - Glob
+  - Bash
+maxTurns: 20
 ---
 
 # 코드 간소화 에이전트

@@ -13,6 +13,7 @@ tools:
   - Grep
   - Bash
   - Agent
+maxTurns: 25
 ---
 
 # Plan Critic — 계획서 악마의 변호인

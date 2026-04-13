@@ -3,6 +3,12 @@ name: naver-logic-analyzer
 description: 네이버 서비스 자동화 문제를 5렌즈(네트워크/브라우저/보안/API/자동화)로 통합 분석하고, 진단 절차로 원인을 확정한 뒤 해결 계획을 수립한다. 코드 수정은 하지 않는다.
 model: opus
 permissionMode: acceptEdits
+tools:
+  - Read
+  - Grep
+  - Glob
+  - Bash
+maxTurns: 15
 ---
 
 # 네이버 로직 분석 에이전트

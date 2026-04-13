@@ -3,6 +3,12 @@ name: data-analyst
 description: 데이터 분석 전용 에이전트. deep-analysis 4단계 방법론을 내재화하여 표면 분석에서 멈추지 않고, 교란 변수 탐색 → 코호트 추적 → 인과 검증까지 자동 수행한다. 분석 스크립트 작성과 실행이 가능하다.
 model: sonnet
 permissionMode: acceptEdits
+tools:
+  - Read
+  - Grep
+  - Glob
+  - Bash
+maxTurns: 20
 ---
 
 # 데이터 분석 에이전트
