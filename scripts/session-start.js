@@ -3,7 +3,14 @@
 /**
  * vibecraft 세션 시작 훅
  * 세션이 시작될 때 vibecraft 활성화 + 추천 명령어 + 꿀팁 표시
+ *
+ * v2.2.0: 신규 버전 최초 감지 시 1회성 업데이트 알림 블록을 표시한다.
+ *         ~/.vibecraft-seen-version 파일로 "본 버전"을 추적한다.
  */
+
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 
 // ── 꿀팁 풀 (랜덤 2개 표시) ────────────────────────────────
 
@@ -81,11 +88,87 @@ function pickRandom(arr, n) {
   return shuffled.slice(0, n);
 }
 
+// ── v2.2.0: 1회성 업데이트 알림 ──────────────────────────────
+// 현재 버전을 plugin.json에서 읽고, ~/.vibecraft-seen-version과 비교
+// 신규 버전이면 업데이트 블록을 표시하고 seen-version 파일을 갱신
+
+function getCurrentVersion() {
+  try {
+    const pluginJson = path.resolve(__dirname, '../.claude-plugin/plugin.json');
+    const data = JSON.parse(fs.readFileSync(pluginJson, 'utf8'));
+    return data.version || null;
+  } catch {
+    return null;
+  }
+}
+
+function getSeenVersion() {
+  try {
+    const p = path.join(os.homedir(), '.vibecraft-seen-version');
+    if (!fs.existsSync(p)) return null;
+    return fs.readFileSync(p, 'utf8').trim();
+  } catch {
+    return null;
+  }
+}
+
+function markVersionSeen(version) {
+  try {
+    const p = path.join(os.homedir(), '.vibecraft-seen-version');
+    fs.writeFileSync(p, version, 'utf8');
+  } catch {
+    // 실패해도 세션 시작은 계속
+  }
+}
+
+// 업데이트 블록 (version별로 내용 분기)
+function getUpdateBlock(version) {
+  if (version === '2.2.0') {
+    return [
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      `🆕 vibecraft v${version} — 하네스 엔지니어링 강화판`,
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '',
+      '이번 업데이트로 AI가 "같은 모델, 더 좋은 결과"를 내도록',
+      '다음 6가지 자동 가드가 추가됐습니다:',
+      '',
+      '  ✅ 증거 자동 확인  — 코드 수정 후 테스트 실행 여부 자동 체크',
+      '  ✅ 도구 실패 진단  — ENOENT/EACCES 등 에러 시 자동 힌트',
+      '  ✅ UI 브라우저 검증 — Playwright로 실제 화면 확인 (설치 시)',
+      '  ✅ 백엔드 검증자  — API 동작을 코드 안 보고 curl로 검증',
+      '  ✅ 다중 작업 추적 — 여러 feature 동시 진행 상태 관리',
+      '  ✅ 서브에이전트 품질 — 시크릿/TODO/디버그 로그 자동 스캔',
+      '',
+      '📖 자세한 내용: CHANGELOG.md 또는 /vibecraft',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '',
+    ];
+  }
+  // 다른 버전은 블록 없음 (조용히 skip)
+  return null;
+}
+
 // ── 메인 ────────────────────────────────────────────────────
+
+const currentVersion = getCurrentVersion();
+const seenVersion = getSeenVersion();
+const isNewVersion = currentVersion && currentVersion !== seenVersion;
+const updateBlock = isNewVersion ? getUpdateBlock(currentVersion) : null;
+
+if (isNewVersion && currentVersion) {
+  markVersionSeen(currentVersion);
+}
 
 const tips = pickRandom(TIPS, 2);
 
-const lines = [
+const lines = [];
+
+// 1회성 업데이트 블록을 최상단에 표시
+if (updateBlock) {
+  lines.push(...updateBlock);
+}
+
+lines.push(
   'vibecraft가 활성화되었습니다.',
   '',
   '💬 이렇게 말해보세요:',
@@ -103,7 +186,7 @@ const lines = [
   `💡 ${tips[0]}`,
   `💡 ${tips[1]}`,
   '',
-  '전체 명령어: /vibecraft  |  사용법 배우기: "안녕"',
-];
+  '전체 명령어: /vibecraft  |  사용법 배우기: "안녕"'
+);
 
 console.log(lines.join('\n'));

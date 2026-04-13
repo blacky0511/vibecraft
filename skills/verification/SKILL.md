@@ -71,8 +71,32 @@ ui-evaluator는 Playwright MCP에 **완전히 의존**한다. 플러그인 서�
 
 1. 프로젝트 루트에 `.mcp.json`이 존재하는지 확인
 2. 존재하면 내용을 읽어 `mcpServers` 객체에 `playwright` 또는 Playwright MCP 관련 엔트리(예: `@playwright/mcp`)가 있는지 검사
-3. **없으면 ui-evaluator 호출을 건너뛰고** 다음 메시지를 사용자에게 제시하고 verification 리포트에 "UI 자동 검증 스킵 — Playwright MCP 미설치"로 기록한다:
-   > "UI 파일이 수정됐지만 프로젝트에 Playwright MCP가 없어 자동 브라우저 검증을 건너뜁니다. 수동으로 화면을 확인하거나, 필요하면 `.mcp.json`에 Playwright MCP를 추가해 주세요."
+3. **없으면 ui-evaluator 호출을 건너뛰고** 아래 복붙 가능한 설치 가이드를 사용자에게 제시한 뒤 verification 리포트에 "UI 자동 검증 스킵 — Playwright MCP 미설치"로 기록한다:
+
+```
+UI 파일을 수정했지만 프로젝트에 Playwright MCP가 없어 자동 브라우저 검증을 건너뜁니다.
+
+자동 검증을 받으려면 아래 두 가지 방법 중 하나를 선택하세요:
+
+[방법 1] Claude Code CLI로 MCP 추가 (권장, 1줄)
+  claude mcp add playwright npx @playwright/mcp@latest
+
+[방법 2] 프로젝트 루트에 .mcp.json 파일 생성
+  프로젝트 폴더에 .mcp.json 파일을 만들고 아래 내용을 복사해 넣으세요:
+
+  {
+    "mcpServers": {
+      "playwright": {
+        "command": "npx",
+        "args": ["-y", "@playwright/mcp@latest"]
+      }
+    }
+  }
+
+설치 후 Claude Code를 재시작하면 ui-evaluator가 다음 UI 작업부터 자동 검증을 수행합니다.
+지금은 수동으로 브라우저에서 화면을 확인해 주세요.
+```
+
 4. 있으면 정상적으로 ui-evaluator를 기동한다
 
 ### 호출 절차

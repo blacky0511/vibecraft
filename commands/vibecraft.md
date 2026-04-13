@@ -71,8 +71,19 @@ allowed-tools:
 - 매 응답 끝: 다음 명령어 리마인더 (Stop 훅)
 - 스킬 완료 후: 다음 단계 자동 제안 (PostToolUse 훅)
 
+### 🆕 v2.2.0 하네스 엔지니어링 강화 (6가지 자동 가드)
+- **증거 자동 확인** — 코드 수정 후 테스트 실행 여부를 Stop 훅이 결정론적으로 검증 (`evidence-stop-guard`)
+- **도구 실패 진단** — ENOENT/EACCES 등 에러 발생 시 한국어 진단 힌트 자동 주입 (`tool-failure-handler`)
+- **UI 브라우저 검증** — `.tsx/.jsx/.css/.html` 수정 후 Playwright로 실제 화면 확인 (`ui-evaluator`, 설치 필요)
+- **백엔드 검증자** — API 변경 시 코드를 보지 않고 curl/psql로 동작만 검증 (`backend-evaluator`)
+- **RPDCA 다중 feature** — 여러 기능 동시 진행 상태를 `docs/plans/rpdca-state.json`에 원자적 기록
+- **서브에이전트 품질 스캔** — 코드 작성 에이전트 완료 시 시크릿/TODO/console.log 자동 감지
+- **PostCompact 복원** — 컴팩션 이후 진행 중인 RPDCA 맥락 자동 복구 (설계 결정 망각 방지)
+
+자세한 변경 이력: `CHANGELOG.md`
+
 ### 구성
-- 스킬 17개 | 에이전트 14개 | 프리셋 5개 | 템플릿 10개 | 명령어 18개
+- 스킬 17개 | 에이전트 15개 | 프리셋 5개 | 템플릿 10개 | 명령어 18개
 
 ### 버전
-vibecraft v2.1.0
+vibecraft v2.2.0
