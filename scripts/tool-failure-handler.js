@@ -20,33 +20,42 @@
 const fs = require('fs');
 
 const DIAGNOSTICS = [
+  // POSIX 에러 코드 + Windows 한국어 메시지 (v2.2.0 CTO #2 H4 반영)
   {
-    pattern: /ENOENT/,
+    pattern: /ENOENT|지정된\s*(?:파일|경로)을?\s*찾을\s*수\s*없|파일을?\s*찾을\s*수\s*없/,
     hint: '파일 경로에 오타가 있거나 해당 파일이 아직 존재하지 않을 수 있습니다. Glob/ls로 경로를 먼저 확인하세요.',
   },
   {
-    pattern: /EACCES/,
+    pattern: /EACCES|액세스가?\s*거부|권한이?\s*없|Permission\s*denied/i,
     hint: '권한 부족입니다. 파일 권한 확인, 또는 상위 디렉토리 쓰기 권한을 확인하세요.',
   },
   {
-    pattern: /ECONNREFUSED/,
+    pattern: /ECONNREFUSED|연결이?\s*거부|대상\s*컴퓨터에서\s*연결을?\s*거부/,
     hint: '대상 서버가 떠 있지 않습니다. 로컬 서버면 먼저 `npm run dev` 같은 명령으로 구동했는지 확인하세요.',
   },
   {
-    pattern: /EADDRINUSE/,
+    pattern: /EADDRINUSE|이미\s*사용\s*중|포트가?\s*사용/,
     hint: '포트가 이미 사용 중입니다. 기존 프로세스를 종료하거나 다른 포트로 변경하세요.',
   },
   {
-    pattern: /ERR_MODULE_NOT_FOUND|Cannot find module/,
-    hint: '모듈을 찾지 못했습니다. package.json의 의존성 + node_modules 설치 상태를 확인하세요.',
+    pattern: /ERR_MODULE_NOT_FOUND|Cannot\s+find\s+module|ModuleNotFoundError|No\s+module\s+named/i,
+    hint: '모듈을 찾지 못했습니다. package.json/requirements.txt의 의존성 + 설치 상태를 확인하세요.',
   },
   {
-    pattern: /TypeError:\s+Cannot\s+read/,
-    hint: 'null/undefined 객체에 접근했습니다. 방어 코드(optional chaining 등) 추가를 검토하세요.',
+    pattern: /TypeError:\s+Cannot\s+read|NullPointerException|AttributeError:\s+'NoneType'/i,
+    hint: 'null/undefined/None 객체에 접근했습니다. 방어 코드(optional chaining, None 체크 등) 추가를 검토하세요.',
   },
   {
-    pattern: /command not found|is not recognized/i,
+    pattern: /command not found|is not recognized|인식되지\s*않|명령을?\s*찾을\s*수\s*없/i,
     hint: 'CLI 명령어를 찾을 수 없습니다. 설치 여부와 PATH를 확인하세요.',
+  },
+  {
+    pattern: /ETIMEDOUT|TimeoutError|시간이?\s*초과|request\s+timed?\s*out/i,
+    hint: '요청 시간이 초과됐습니다. 네트워크 상태 또는 timeout 설정을 확인하세요.',
+  },
+  {
+    pattern: /EMFILE|too many open files|파일이?\s*너무\s*많/i,
+    hint: '열린 파일 디스크립터가 너무 많습니다. ulimit 또는 파일 핸들러 리소스 해제를 확인하세요.',
   },
 ];
 
