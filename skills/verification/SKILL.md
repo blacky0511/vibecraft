@@ -54,6 +54,44 @@ M/L 크기 작업의 검증 시 추가 단계:
 
 ---
 
+## UI 관련 작업 자동 검증 (ui-evaluator)
+
+수정된 파일 목록에 아래 확장자/경로가 포함되면 `ui-evaluator` 서브에이전트를 자동 호출한다:
+
+- `.tsx`, `.jsx`, `.vue`, `.svelte`, `.html`, `.css`, `.scss`
+- `app/**/page.*`, `components/**/*`, `pages/**/*`
+
+ui-evaluator는 **Playwright MCP만 사용**하고 코드에 접근할 수 없는 검증 전용 에이전트다 (Generator/Evaluator 분리).
+
+### Playwright MCP 사전 감지 (필수 Fallback)
+
+ui-evaluator는 Playwright MCP에 **완전히 의존**한다. 플러그인 서브에이전트는 보안상 `mcpServers` 필드가 무시되므로, ui-evaluator가 Playwright MCP를 사용하려면 **사용자 프로젝트의 `.mcp.json`에 Playwright MCP가 등록되어 있어야 한다** (research.md 섹션 9-5, Claude Code Issue #13605 참조).
+
+따라서 verification 스킬은 ui-evaluator 호출 직전에 아래 순서로 가용성을 확인한다:
+
+1. 프로젝트 루트에 `.mcp.json`이 존재하는지 확인
+2. 존재하면 내용을 읽어 `mcpServers` 객체에 `playwright` 또는 Playwright MCP 관련 엔트리(예: `@playwright/mcp`)가 있는지 검사
+3. **없으면 ui-evaluator 호출을 건너뛰고** 다음 메시지를 사용자에게 제시하고 verification 리포트에 "UI 자동 검증 스킵 — Playwright MCP 미설치"로 기록한다:
+   > "UI 파일이 수정됐지만 프로젝트에 Playwright MCP가 없어 자동 브라우저 검증을 건너뜁니다. 수동으로 화면을 확인하거나, 필요하면 `.mcp.json`에 Playwright MCP를 추가해 주세요."
+4. 있으면 정상적으로 ui-evaluator를 기동한다
+
+### 호출 절차
+
+1. 수정 파일 목록에서 위 확장자/경로가 1개 이상이면 UI 검증 대상으로 분류
+2. 위의 Playwright MCP 사전 감지 수행 → 미설치면 스킵 + 안내 메시지 출력 후 다음 검증 단계로 이동
+3. `Agent` 도구로 `ui-evaluator` 서브에이전트 기동
+4. 프롬프트: "docs/plans/{feature}/plan.md를 기준으로 변경된 UI를 검증하라. 로컬 서버 URL은 http://localhost:3000 기본. 서버가 안 떠 있으면 사용자에게 서버 기동을 요청하라."
+5. ui-evaluator 판정이 "재작업 필요"이면 gap-detector Match Rate와 합산해 Act 루프 진입
+6. ui-evaluator 판정이 "통과"이면 증거(스냅샷 요약 + 콘솔 상태)를 verification 리포트에 포함
+
+### 주의
+- ui-evaluator는 **코드를 볼 수 없다**. 구현 결함을 지적하면 메인 에이전트가 코드를 읽어 수정한다
+- UI가 아닌 변경(Node.js 백엔드, CLI 도구 등)에는 ui-evaluator를 호출하지 않는다
+- 로컬 서버가 없으면 정적 HTML을 file:// 프로토콜로 열어 스냅샷 확보를 시도한다
+- Playwright MCP 미설치 시 에러로 멈추지 않고 조용히 스킵하여 전체 verification 흐름이 중단되지 않게 한다
+
+---
+
 ## S 크기: 체크리스트 검증
 
 ### 1. 테스트 확인
