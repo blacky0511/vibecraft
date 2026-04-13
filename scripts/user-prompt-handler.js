@@ -271,6 +271,26 @@ function hasWorkRequest(prompt) {
   return /만들|추가|구현|수정|고쳐|해\s?줘|바꿔|에러|버그|리뷰|배포|분석|시작|개발|작업|짜줘|작성|생성|제작|코딩|변경|개선|잡아|올려|크롤링|패킷|디버깅|디버그/.test(prompt);
 }
 
+// ── 시스템 메시지 감지 (v2.2.0 추가) ─────────────────────────
+// task-notification, system-reminder 등 system이 삽입한 컨텐츠는
+// 사용자 입력이 아니므로 패턴 매칭에서 제외한다 (오탐 방지)
+const SYSTEM_MESSAGE_PATTERNS = [
+  /<task-notification[>\s]/i,
+  /<system-reminder[>\s]/i,
+  /<task-id>/i,
+  /<tool-use-id>/i,
+  /<output-file>/i,
+  /<local-command-caveat>/i,
+  /\[SYSTEM NOTIFICATION/i,
+  /\[SYSTEM\]\s+사용자가/i, // 이전 훅 출력이 prompt로 재유입되는 경우
+  /UserPromptSubmit hook success:/i,
+  /SessionStart:startup hook success:/i,
+];
+
+function isSystemMessage(prompt) {
+  return SYSTEM_MESSAGE_PATTERNS.some(re => re.test(prompt));
+}
+
 // ── 메인 로직 ───────────────────────────────────────────────
 
 try {
@@ -278,6 +298,11 @@ try {
   const prompt = (input.prompt || '').trim();
 
   if (!prompt || prompt.startsWith('/')) {
+    process.exit(0);
+  }
+
+  // 시스템 메시지는 조용히 스킵 (task-notification, system-reminder 등)
+  if (isSystemMessage(prompt)) {
     process.exit(0);
   }
 
