@@ -91,6 +91,11 @@
         "hooks": [
           {
             "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/evidence-stop-guard.js\"",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/unified-stop.js\"",
             "timeout": 10000
           }
